@@ -39,43 +39,77 @@
         </div>
     </header>
 
-    <!-- 登入 / 註冊畫面 (未登入時顯示) -->
+    <!-- 登入畫面 (未登入時顯示) -->
     <main id="auth-container" class="flex-grow flex items-center justify-center px-4 py-12">
         <div class="bg-white max-w-md w-full rounded-2xl shadow-xl p-8 border border-slate-200">
             <div class="text-center mb-8">
                 <div class="bg-blue-50 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                     <i class="fa-solid fa-user-shield"></i>
                 </div>
-                <h2 id="auth-title" class="text-2xl font-bold text-slate-900">系統登入</h2>
+                <h2 class="text-2xl font-bold text-slate-900">系統登入</h2>
                 <p class="text-sm text-slate-500 mt-1">請登入您的電子郵件帳號以存取工廠 KPI 系統</p>
             </div>
 
-            <!-- 切換標籤 -->
-            <div class="flex rounded-lg bg-slate-100 p-1 mb-6">
-                <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-medium rounded-md bg-white text-blue-600 shadow-sm transition">登入帳號</button>
-                <button id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-medium rounded-md text-slate-500 hover:text-slate-900 transition">快速註冊</button>
-            </div>
-
-            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
-                <div id="register-name-field" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">英文名 (English Name)</label>
-                    <input type="text" id="reg-english-name" placeholder="例如: Alex Liu" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
-                </div>
+            <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">電子郵件 (Email)</label>
-                    <input type="email" id="auth-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <input type="email" id="login-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">密碼 (Password)</label>
-                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
                 </div>
-                <button type="submit" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow-md text-sm">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow-md text-sm">
                     立即登入
                 </button>
             </form>
+
+            <!-- 快速註冊按鈕 -->
+            <div class="mt-6 text-center border-t border-slate-100 pt-4">
+                <p class="text-xs text-slate-500 mb-2">尚未擁有帳號？</p>
+                <button onclick="openRegisterModal()" class="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+                    <i class="fa-solid fa-user-plus mr-1"></i>點此進行快速註冊
+                </button>
+            </div>
+
             <div id="auth-error" class="mt-4 text-center text-xs text-red-600 font-medium"></div>
         </div>
     </main>
+
+    <!-- 快速註冊互動彈跳視窗 (Modal) -->
+    <div id="register-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6 border border-slate-200 transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center">
+                    <i class="fa-solid fa-user-plus text-blue-600 mr-2"></i>快速註冊帳號
+                </h3>
+                <button onclick="closeRegisterModal()" class="text-slate-400 hover:text-slate-600 text-sm">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">填寫以下資訊即可直接建立帳號並寫入資料庫名冊中。</p>
+            
+            <form id="register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">英文名字 (English Name)</label>
+                    <input type="text" id="reg-english-name" required placeholder="例如: Alex Liu" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">電子郵件帳號 (Email)</label>
+                    <input type="email" id="reg-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">密碼 (Password)</label>
+                    <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closeRegisterModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-lg transition text-sm">取消</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow text-sm">確認註冊</button>
+                </div>
+            </form>
+            <div id="reg-error" class="mt-3 text-center text-xs text-red-600 font-medium"></div>
+        </div>
+    </div>
 
     <!-- 主應用程式介面 (登入後顯示) -->
     <div id="app-container" class="hidden flex-grow flex flex-col max-w-7xl w-full mx-auto px-4 py-6">
@@ -103,13 +137,11 @@
                     <h2 class="text-lg font-bold text-slate-900">各課中夜班稼動與人力雙軸趨勢圖</h2>
                     <p class="text-xs text-slate-500">柱狀圖代表稼動率 (%)，折線圖代表人力配置，圖表下方自動帶入人機備註與人員紀律文字標籤。</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">選擇製程課別</label>
-                        <select id="chart-dept-select" onchange="renderCharts()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <!-- 動態帶入 -->
-                        </select>
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">選擇製程課別</label>
+                    <select id="chart-dept-select" onchange="renderCharts()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <!-- 動態帶入 -->
+                    </select>
                 </div>
             </div>
 
@@ -300,10 +332,9 @@
     <!-- Firebase SDK 引入與主程式邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue, child, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 使用者提供的 Firebase 設定
         const firebaseConfig = {
             apiKey: "AIzaSyBsAXBofb79NcR_iKTdnBUtp4WczMu_hCw",
             authDomain: "mnshiftability.firebaseapp.com",
@@ -318,14 +349,12 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // 預設部門列表 (對應附件工作表)
         const DEPARTMENTS = [
             "金屬一課", "金屬二課-C1", "金屬二課-D3", "金屬三課-C1", 
             "金屬三課-D1", "乾式製程課", "濕式製程課(RTP)", "線切割課", 
             "車床課D3(自)", "車床課D3(手)", "石墨銑床課", "製造五部"
         ];
 
-        // 產生 2026年10月份日期列表
         const DATES = [];
         for (let i = 1; i <= 31; i++) {
             let dayStr = i < 10 ? `0${i}` : `${i}`;
@@ -337,7 +366,7 @@
         let nightChartInstance = null;
         let currentSummaryPeriod = '7days';
 
-        // 檢查連線狀態
+        // 檢查連線狀況
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
             const dot = document.getElementById("status-dot");
@@ -363,7 +392,6 @@
                 appContainer.classList.remove("hidden");
                 userInfoSection.classList.remove("hidden");
                 
-                // 取得用戶英文名
                 let displayName = user.email;
                 try {
                     const userSnap = await get(child(ref(db), `users/${user.uid}`));
@@ -373,7 +401,6 @@
                 } catch (e) {}
                 userDisplayName.innerText = displayName;
 
-                // 初始化資料並載入
                 await initializeDefaultDataIfNeeded();
                 fetchAllData();
             } else {
@@ -383,52 +410,55 @@
             }
         });
 
-        let isRegisterMode = false;
-        window.switchAuthTab = function(mode) {
-            isRegisterMode = (mode === 'register');
-            const title = document.getElementById("auth-title");
-            const btn = document.getElementById("auth-submit-btn");
-            const regField = document.getElementById("register-name-field");
-            const loginBtn = document.getElementById("tab-login-btn");
-            const regBtn = document.getElementById("tab-register-btn");
-
-            if (isRegisterMode) {
-                title.innerText = "快速註冊帳號";
-                btn.innerText = "立即註冊";
-                regField.classList.remove("hidden");
-                regBtn.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white text-blue-600 shadow-sm transition";
-                loginBtn.className = "flex-1 py-2 text-sm font-medium rounded-md text-slate-500 hover:text-slate-900 transition";
-            } else {
-                title.innerText = "系統登入";
-                btn.innerText = "立即登入";
-                regField.classList.add("hidden");
-                loginBtn.className = "flex-1 py-2 text-sm font-medium rounded-md bg-white text-blue-600 shadow-sm transition";
-                regBtn.className = "flex-1 py-2 text-sm font-medium rounded-md text-slate-500 hover:text-slate-900 transition";
-            }
+        // 註冊彈跳視窗控制
+        window.openRegisterModal = function() {
+            document.getElementById("register-modal").classList.remove("hidden");
+            document.getElementById("reg-error").innerText = "";
         }
 
-        window.handleAuthSubmit = async function(e) {
+        window.closeRegisterModal = function() {
+            document.getElementById("register-modal").classList.add("hidden");
+        }
+
+        // 登入送出
+        window.handleLoginSubmit = async function(e) {
             e.preventDefault();
-            const email = document.getElementById("auth-email").value;
-            const password = document.getElementById("auth-password").value;
-            const englishName = document.getElementById("reg-english-name").value;
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
             const errDiv = document.getElementById("auth-error");
             errDiv.innerText = "";
 
             try {
-                if (isRegisterMode) {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-                    await set(ref(db, `users/${user.uid}`), {
-                        email: email,
-                        englishName: englishName || email.split('@')[0],
-                        createdAt: new Date().toISOString()
-                    });
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                }
+                await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                errDiv.innerText = "認證失敗: " + error.message;
+                errDiv.innerText = "登入失敗: " + error.message;
+            }
+        }
+
+        // 註冊送出（寫入 Firebase 認證與 users 名冊）
+        window.handleRegisterSubmit = async function(e) {
+            e.preventDefault();
+            const englishName = document.getElementById("reg-english-name").value;
+            const email = document.getElementById("reg-email").value;
+            const password = document.getElementById("reg-password").value;
+            const errDiv = document.getElementById("reg-error");
+            errDiv.innerText = "";
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // 將註冊資料回寫到 firebase 的 users 名冊中
+                await set(ref(db, `users/${user.uid}`), {
+                    email: email,
+                    englishName: englishName,
+                    createdAt: new Date().toISOString()
+                });
+
+                closeRegisterModal();
+                alert("註冊成功！已自動登入系統。");
+            } catch (error) {
+                errDiv.innerText = "註冊失敗: " + error.message;
             }
         }
 
@@ -452,7 +482,6 @@
             if (tabName === 'summary') renderSummaryTable();
         }
 
-        // 初始化預設範例資料 (若資料庫無資料時)
         async function initializeDefaultDataIfNeeded() {
             const snap = await get(child(ref(db), 'departments'));
             if (!snap.exists()) {
@@ -478,7 +507,6 @@
             }
         }
 
-        // 取得所有資料
         function fetchAllData() {
             onValue(ref(db, 'departments'), (snapshot) => {
                 if (snapshot.exists()) {
@@ -518,19 +546,13 @@
             if (currentMgmtDate) mgmtDateSelect.value = currentMgmtDate;
         }
 
-        // 渲染圖表 (雙軸: 折線=人力, 柱狀=稼動率%)
         window.renderCharts = function() {
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
             const deptData = globalDataCache[dept] || {};
 
             const labels = DATES;
-            const midManpowerArr = [];
-            const midUtilArr = [];
-            const midLabelsArr = [];
-
-            const nightManpowerArr = [];
-            const nightUtilArr = [];
-            const nightLabelsArr = [];
+            const midManpowerArr = [], midUtilArr = [], midLabelsArr = [];
+            const nightManpowerArr = [], nightUtilArr = [], nightLabelsArr = [];
 
             DATES.forEach(date => {
                 const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'', nightDiscipline:'' };
@@ -546,7 +568,6 @@
                 nightLabelsArr.push(`備註:${dayObj.nightNote || '無'} | 紀律:${dayObj.nightDiscipline || '正常'}`);
             });
 
-            // 中班圖表
             const ctxMid = document.getElementById('midChart').getContext('2d');
             if (midChartInstance) midChartInstance.destroy();
             midChartInstance = new Chart(ctxMid, {
@@ -554,42 +575,13 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            type: 'bar',
-                            label: '中班稼動率 (%)',
-                            data: midUtilArr,
-                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
-                            borderColor: 'rgb(245, 158, 11)',
-                            borderWidth: 1,
-                            yAxisID: 'y1',
-                            order: 2
-                        },
-                        {
-                            type: 'line',
-                            label: '中班人力',
-                            data: midManpowerArr,
-                            borderColor: 'rgb(59, 130, 246)',
-                            backgroundColor: 'rgb(59, 130, 246)',
-                            borderWidth: 2,
-                            tension: 0.1,
-                            yAxisID: 'y',
-                            order: 1
-                        }
+                        { type: 'bar', label: '中班稼動率 (%)', data: midUtilArr, backgroundColor: 'rgba(245, 158, 11, 0.7)', borderColor: 'rgb(245, 158, 11)', borderWidth: 1, yAxisID: 'y1', order: 2 },
+                        { type: 'line', label: '中班人力', data: midManpowerArr, borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgb(59, 130, 246)', borderWidth: 2, tension: 0.1, yAxisID: 'y', order: 1 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                footer: (tooltipItems) => {
-                                    const idx = tooltipItems[0].dataIndex;
-                                    return midLabelsArr[idx];
-                                }
-                            }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { tooltip: { callbacks: { footer: (items) => midLabelsArr[items[0].dataIndex] } } },
                     scales: {
                         y: { type: 'linear', position: 'left', title: { display: true, text: '人力 (人)' }, min: 0 },
                         y1: { type: 'linear', position: 'right', title: { display: true, text: '稼動率 (%)' }, min: 0, max: 100, grid: { drawOnChartArea: false } }
@@ -597,7 +589,6 @@
                 }
             });
 
-            // 夜班圖表
             const ctxNight = document.getElementById('nightChart').getContext('2d');
             if (nightChartInstance) nightChartInstance.destroy();
             nightChartInstance = new Chart(ctxNight, {
@@ -605,42 +596,13 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            type: 'bar',
-                            label: '夜班稼動率 (%)',
-                            data: nightUtilArr,
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
-                            borderColor: 'rgb(99, 102, 241)',
-                            borderWidth: 1,
-                            yAxisID: 'y1',
-                            order: 2
-                        },
-                        {
-                            type: 'line',
-                            label: '夜班人力',
-                            data: nightManpowerArr,
-                            borderColor: 'rgb(236, 72, 153)',
-                            backgroundColor: 'rgb(236, 72, 153)',
-                            borderWidth: 2,
-                            tension: 0.1,
-                            yAxisID: 'y',
-                            order: 1
-                        }
+                        { type: 'bar', label: '夜班稼動率 (%)', data: nightUtilArr, backgroundColor: 'rgba(99, 102, 241, 0.7)', borderColor: 'rgb(99, 102, 241)', borderWidth: 1, yAxisID: 'y1', order: 2 },
+                        { type: 'line', label: '夜班人力', data: nightManpowerArr, borderColor: 'rgb(236, 72, 153)', backgroundColor: 'rgb(236, 72, 153)', borderWidth: 2, tension: 0.1, yAxisID: 'y', order: 1 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                footer: (tooltipItems) => {
-                                    const idx = tooltipItems[0].dataIndex;
-                                    return nightLabelsArr[idx];
-                                }
-                            }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { tooltip: { callbacks: { footer: (items) => nightLabelsArr[items[0].dataIndex] } } },
                     scales: {
                         y: { type: 'linear', position: 'left', title: { display: true, text: '人力 (人)' }, min: 0 },
                         y1: { type: 'linear', position: 'right', title: { display: true, text: '稼動率 (%)' }, min: 0, max: 100, grid: { drawOnChartArea: false } }
@@ -649,7 +611,6 @@
             });
         }
 
-        // 高畫質 PNG 圖表匯出
         window.exportChartPNG = function(canvasId, filenamePrefix) {
             const canvas = document.getElementById(canvasId);
             const imageURL = canvas.toDataURL('image/png', 1.0);
@@ -661,7 +622,6 @@
             document.body.removeChild(a);
         }
 
-        // 總表分析週期切換
         window.setSummaryPeriod = function(period) {
             currentSummaryPeriod = period;
             document.getElementById('btn-period-7').className = period === '7days' ? 'px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white shadow' : 'px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300';
@@ -672,30 +632,19 @@
         window.renderSummaryTable = function() {
             const tbody = document.getElementById("summary-table-body");
             tbody.innerHTML = "";
-
-            // 決定要計算的日期範圍
-            let targetDates = DATES;
-            if (currentSummaryPeriod === '7days') {
-                targetDates = DATES.slice(-7); // 取最後七天
-            }
+            let targetDates = currentSummaryPeriod === '7days' ? DATES.slice(-7) : DATES;
 
             DEPARTMENTS.forEach(dept => {
                 const deptData = globalDataCache[dept] || {};
-                let totalMidUtil = 0, totalNightUtil = 0;
-                let totalMidManpower = 0, totalNightManpower = 0;
-                let count = targetDates.length;
-                let remarks = [];
+                let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
+                let count = targetDates.length, remarks = [];
 
                 targetDates.forEach(date => {
                     const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'', nightDiscipline:'' };
-                    
-                    let midU = dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
-                    let nightU = dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
-
-                    totalMidUtil += midU;
-                    totalNightUtil += nightU;
-                    totalMidManpower += Number(dayObj.midManpower);
-                    totalNightManpower += Number(dayObj.nightManpower);
+                    totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
+                    totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
+                    totalMidMp += Number(dayObj.midManpower);
+                    totalNightMp += Number(dayObj.nightManpower);
 
                     if (dayObj.midNote && dayObj.midNote !== '正常') remarks.push(`[中] ${dayObj.midNote}`);
                     if (dayObj.nightNote && dayObj.nightNote !== '正常') remarks.push(`[夜] ${dayObj.nightNote}`);
@@ -703,41 +652,30 @@
                     if (dayObj.nightDiscipline && dayObj.nightDiscipline !== '正常') remarks.push(`[夜紀] ${dayObj.nightDiscipline}`);
                 });
 
-                let avgMidUtil = count > 0 ? (totalMidUtil / count).toFixed(1) : 0;
-                let avgNightUtil = count > 0 ? (totalNightUtil / count).toFixed(1) : 0;
-                let avgMidMp = count > 0 ? (totalMidManpower / count).toFixed(1) : 0;
-                let avgNightMp = count > 0 ? (totalNightManpower / count).toFixed(1) : 0;
-                let uniqueRemarks = [...new Set(remarks)].slice(0, 3).join('; ') || '均正常運作';
-
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs";
                 tr.innerHTML = `
                     <td class="p-3 font-bold text-slate-900">${dept}</td>
-                    <td class="p-3 text-center text-amber-600 font-semibold">${avgMidUtil}%</td>
-                    <td class="p-3 text-center text-indigo-600 font-semibold">${avgNightUtil}%</td>
-                    <td class="p-3 text-center">${avgMidMp} 人</td>
-                    <td class="p-3 text-center">${avgNightMp} 人</td>
-                    <td class="p-3 text-slate-600">${uniqueRemarks}</td>
+                    <td class="p-3 text-center text-amber-600 font-semibold">${(totalMidUtil/count).toFixed(1)}%</td>
+                    <td class="p-3 text-center text-indigo-600 font-semibold">${(totalNightUtil/count).toFixed(1)}%</td>
+                    <td class="p-3 text-center">${(totalMidMp/count).toFixed(1)} 人</td>
+                    <td class="p-3 text-center">${(totalNightMp/count).toFixed(1)} 人</td>
+                    <td class="p-3 text-slate-600">${[...new Set(remarks)].slice(0, 3).join('; ') || '均正常運作'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // 資料管理表單載入
         window.loadManagementData = function() {
             const dept = document.getElementById("mgmt-dept-select").value;
             const date = document.getElementById("mgmt-date-select").value;
             if (!dept || !date) return;
 
-            const dayObj = globalDataCache[dept]?.[date] || {
-                midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
-                nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
-                midNote: '', nightNote: '', midDiscipline: '', nightDiscipline: ''
-            };
+            const dayObj = globalDataCache[dept]?.[date] || { midManpower: 0, midTotalMachines: 0, midActiveMachines: 0, nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0, midNote: '', nightNote: '', midDiscipline: '', nightDiscipline: '' };
 
             document.getElementById("mgmt-mid-manpower").value = dayObj.midManpower;
             document.getElementById("mgmt-mid-total").value = dayObj.midTotalMachines;
-            document.getElementById("mgmt-mid-active").value = dayObj.mgmtActiveMachines || dayObj.midActiveMachines;
+            document.getElementById("mgmt-mid-active").value = dayObj.midActiveMachines;
             document.getElementById("mgmt-mid-note").value = dayObj.midNote;
             document.getElementById("mgmt-mid-disc").value = dayObj.midDiscipline;
 
@@ -774,10 +712,8 @@
             }
         }
 
-        // Excel 一鍵匯出
         window.exportAllToExcel = function() {
             const wb = XLSX.utils.book_new();
-
             DEPARTMENTS.forEach(dept => {
                 const deptData = globalDataCache[dept] || {};
                 let rows = [
@@ -789,22 +725,19 @@
                     ["夜班-總機台數", ...DATES.map(d => deptData[d]?.nightTotalMachines || 0)],
                     ["夜班-稼動機台", ...DATES.map(d => deptData[d]?.nightActiveMachines || 0)],
                     ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || "")],
-                    ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || "")],
+                    ["夜班人機備註", ...DRESS_CHECK_VAL = d => deptData[d]?.nightNote || ""],
                     ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || "")],
                     ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || "")]
                 ];
                 const ws = XLSX.utils.aoa_to_sheet(rows);
                 XLSX.utils.book_append_sheet(wb, ws, dept);
             });
-
             XLSX.writeFile(wb, `工廠中夜班KPI總表_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        // Excel 一鍵匯入
         window.importExcelFile = function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async function(e) {
                 try {
@@ -814,36 +747,24 @@
 
                     workbook.SheetNames.forEach(sheetName => {
                         if (DEPARTMENTS.includes(sheetName)) {
-                            const worksheet = workbook.Sheets[sheetName];
-                            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                            const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
                             if (json.length >= 11) {
                                 const headerDates = json[0].slice(1);
-                                const midMp = json[1].slice(1);
-                                const midTot = json[2].slice(1);
-                                const midAct = json[3].slice(1);
-                                const nightMp = json[4].slice(1);
-                                const nightTot = json[5].slice(1);
-                                const nightAct = json[6].slice(1);
-                                const midNote = json[7].slice(1);
-                                const nightNote = json[8].slice(1);
-                                const midDisc = json[9].slice(1);
-                                const nightDisc = json[10].slice(1);
-
                                 headerDates.forEach((dateCol, idx) => {
                                     if (!dateCol) return;
                                     let dateStr = String(dateCol).slice(0, 10);
                                     if (DATES.includes(dateStr)) {
                                         updates[`departments/${sheetName}/${dateStr}`] = {
-                                            midManpower: Number(midMp[idx]) || 0,
-                                            midTotalMachines: Number(midTot[idx]) || 0,
-                                            midActiveMachines: Number(midAct[idx]) || 0,
-                                            nightManpower: Number(nightMp[idx]) || 0,
-                                            nightTotalMachines: Number(nightTot[idx]) || 0,
-                                            nightActiveMachines: Number(nightAct[idx]) || 0,
-                                            midNote: String(midNote[idx] || ''),
-                                            nightNote: String(nightNote[idx] || ''),
-                                            midDiscipline: String(midDisc[idx] || ''),
-                                            nightDiscipline: String(nightDisc[idx] || '')
+                                            midManpower: Number(json[1][idx+1]) || 0,
+                                            midTotalMachines: Number(json[2][idx+1]) || 0,
+                                            midActiveMachines: Number(json[3][idx+1]) || 0,
+                                            nightManpower: Number(json[4][idx+1]) || 0,
+                                            nightTotalMachines: Number(json[5][idx+1]) || 0,
+                                            nightActiveMachines: Number(json[6][idx+1]) || 0,
+                                            midNote: String(json[7][idx+1] || ''),
+                                            nightNote: String(json[8][idx+1] || ''),
+                                            midDiscipline: String(json[9][idx+1] || ''),
+                                            nightDiscipline: String(json[10][idx+1] || '')
                                         };
                                     }
                                 });
