@@ -28,6 +28,11 @@
                 </div>
             </div>
             <div class="flex items-center space-x-5">
+                <!-- 網頁上次更新日期時間顯示 -->
+                <div id="last-update-display" class="hidden md:flex items-center space-x-1.5 text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 font-bold">
+                    <i class="fa-regular fa-clock text-blue-400"></i>
+                    <span>最後更新: <span id="update-time-text">--</span></span>
+                </div>
                 <div id="connection-status" class="flex items-center space-x-2 text-xs bg-slate-800 px-3.5 py-1.5 rounded-full border border-slate-700 shadow-inner">
                     <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                     <span id="status-text" class="text-slate-200 font-bold">連線檢查中...</span>
@@ -120,6 +125,12 @@
             </button>
             <button onclick="switchAppTab('summary')" class="tab-btn px-5 py-2.5 rounded-xl text-sm bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-2 font-extrabold">
                 <i class="fa-solid fa-table-cells"></i><span>總表分析與趨勢建議</span>
+            </button>
+            <button onclick="switchAppTab('quality')" class="tab-btn px-5 py-2.5 rounded-xl text-sm bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-2 font-extrabold">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i><span>品質異常未處理</span>
+            </button>
+            <button onclick="switchAppTab('machine')" class="tab-btn px-5 py-2.5 rounded-xl text-sm bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-2 font-extrabold">
+                <i class="fa-solid fa-gears text-indigo-600"></i><span>機故統計與圖表</span>
             </button>
             <button onclick="switchAppTab('management')" class="tab-btn px-5 py-2.5 rounded-xl text-sm bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-2 font-extrabold">
                 <i class="fa-solid fa-pen-to-square"></i><span>資料填寫與管理</span>
@@ -225,7 +236,84 @@
             </div>
         </div>
 
-        <!-- 分頁 3: 資料填寫與管理 -->
+        <!-- 分頁 3: 品質異常未處理 -->
+        <div id="tab-quality" class="hidden space-y-6">
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
+                <div class="mb-4">
+                    <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2"></i>品質異常未處理清單與分析
+                    </h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">自動計算「延遲天數未處理 = 日期 - 品保通知日期」，並分析責任單位與異常原因。</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
+                                <th class="p-3.5">日期</th>
+                                <th class="p-3.5">品保通知日期</th>
+                                <th class="p-3.5">製程</th>
+                                <th class="p-3.5">製令編號</th>
+                                <th class="p-3.5">品號</th>
+                                <th class="p-3.5">異常原因</th>
+                                <th class="p-3.5">責任單位</th>
+                                <th class="p-3.5 text-center text-red-700">延遲天數未處理</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quality-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分頁 4: 機故統計與圖表 -->
+        <div id="tab-machine" class="hidden space-y-6">
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
+                        <i class="fa-solid fa-gears text-indigo-600 mr-2"></i>機台故障統計與累積停機分析
+                    </h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">若「修復完成時間」空白則依據當前時間持續計算累積停機天數，並按課別與機台繪製統計圖表。</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-300">
+                        <h3 class="font-extrabold text-slate-950 text-sm mb-3">依「課別」統計累積停機天數</h3>
+                        <div class="relative h-72">
+                            <canvas id="machineDeptChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-300">
+                        <h3 class="font-extrabold text-slate-950 text-sm mb-3">依「機台編號」統計累積停機天數</h3>
+                        <div class="relative h-72">
+                            <canvas id="machineItemChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
+                                <th class="p-3.5">課別</th>
+                                <th class="p-3.5">機台編號</th>
+                                <th class="p-3.5">異常開始時間</th>
+                                <th class="p-3.5">修復完成時間</th>
+                                <th class="p-3.5 text-center text-red-700">累積停機天數</th>
+                                <th class="p-3.5">異常原因分類</th>
+                                <th class="p-3.5">異常原因詳述</th>
+                                <th class="p-3.5">處理對策</th>
+                                <th class="p-3.5 text-center">結案狀態</th>
+                            </tr>
+                        </thead>
+                        <tbody id="machine-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分頁 5: 資料填寫與管理 -->
         <div id="tab-management" class="hidden space-y-6">
             <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
@@ -304,7 +392,7 @@
             </div>
         </div>
 
-        <!-- 分頁 4: Excel 一鍵匯入匯出 -->
+        <!-- 分頁 6: Excel 一鍵匯入匯出 -->
         <div id="tab-excel" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
@@ -372,6 +460,8 @@
         let globalDataCache = {};
         let midChartInstance = null;
         let nightChartInstance = null;
+        let machineDeptChartInstance = null;
+        let machineItemChartInstance = null;
         let currentSummaryPeriod = '7days';
 
         const connectedRef = ref(db, ".info/connected");
@@ -407,6 +497,7 @@
                 } catch (e) {}
                 userDisplayName.innerText = displayName;
 
+                updateLastUpdateTime();
                 await initializeDefaultDataIfNeeded();
                 fetchAllData();
             } else {
@@ -415,6 +506,17 @@
                 userInfoSection.classList.add("hidden");
             }
         });
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeStr = now.getFullYear() + '-' + 
+                String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(now.getDate()).padStart(2, '0') + ' ' + 
+                String(now.getHours()).padStart(2, '0') + ':' + 
+                String(now.getMinutes()).padStart(2, '0') + ':' + 
+                String(now.getSeconds()).padStart(2, '0');
+            document.getElementById("update-time-text").innerText = timeStr;
+        }
 
         window.openRegisterModal = function() {
             document.getElementById("register-modal").classList.remove("hidden");
@@ -465,7 +567,7 @@
         }
 
         window.switchAppTab = function(tabName) {
-            ['dashboard', 'summary', 'management', 'excel'].forEach(t => {
+            ['dashboard', 'summary', 'quality', 'machine', 'management', 'excel'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add("hidden");
             });
             document.getElementById(`tab-${tabName}`).classList.remove("hidden");
@@ -477,6 +579,8 @@
 
             if (tabName === 'dashboard') renderCharts();
             if (tabName === 'summary') renderSummaryTable();
+            if (tabName === 'quality') renderQualityTable();
+            if (tabName === 'machine') renderMachineAnalytics();
         }
 
         async function initializeDefaultDataIfNeeded() {
@@ -504,7 +608,10 @@
                     populateDropdowns();
                     renderCharts();
                     renderSummaryTable();
+                    renderQualityTable();
+                    renderMachineAnalytics();
                     loadManagementData();
+                    updateLastUpdateTime();
                 }
             });
         }
@@ -540,7 +647,6 @@
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
             const deptData = globalDataCache[dept] || {};
 
-            // 動態更新圖表上方標題顯示課別
             document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班 (Mid-Shift) 稼動與人力分析`;
             document.getElementById("night-chart-title").innerHTML = `<i class="fa-solid fa-moon mr-2"></i>[${dept}] 夜班 (Night-Shift) 稼動與人力分析`;
 
@@ -646,27 +752,155 @@
             });
         }
 
-        // 匯出 PNG 功能：自動在圖表上方繪製課別標註，確保檔名與圖片內文皆清晰包含課別與高清粗體黑字
+        // 品質異常未處理表格渲染
+        window.renderQualityTable = function() {
+            const tbody = document.getElementById("quality-table-body");
+            tbody.innerHTML = "";
+
+            // 範例資料對應附件內容
+            const qualityData = [
+                { date: "2026-10-10", notify: "10月6日", process: "IPQC", order: "ML15-260806004", item: "F0004-ASSE000", reason: "牙缺角、牙GO NG", dept: "製造一(線切)" },
+                { date: "2026-10-10", notify: "10月6日", process: "OQC", order: "ML10-260526169", item: "F0924-SWTE000", reason: "缺角、牙GO NG", dept: "車床" },
+                { date: "2026-10-10", notify: "10月6日", process: "IPQC", order: "ML10-260807070", item: "60824-STAG100", reason: "外觀異常色差", dept: "製造一(線切)" },
+                { date: "2026-10-10", notify: "10月7日", process: "OQC", order: "ML10-260909143", item: "14974-VWTE000", reason: "異常痕跡", dept: "清洗" },
+                { date: "2026-10-10", notify: "10月7日", process: "OQC", order: "ML10-260729013", item: "10342-VALE000", reason: "段差", dept: "金二" },
+                { date: "2026-10-10", notify: "10月7日", process: "OQC", order: "MO10-260609020...", item: "F0012-VTAE000", reason: "尺寸NG、牙缺角", dept: "製造一、清洗" }
+            ];
+
+            qualityData.forEach(row => {
+                // 計算延遲天數: 日期 - 品保通知日期 (例如 10月10日 - 10月6日 = 4天)
+                let notifyDay = parseInt(row.notify.replace("10月", "").replace("日", ""));
+                let currentDay = parseInt(row.date.split("-")[2]);
+                let delayDays = currentDay - notifyDay;
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
+                tr.innerHTML = `
+                    <td class="p-3.5">${row.date}</td>
+                    <td class="p-3.5 font-bold">${row.notify}</td>
+                    <td class="p-3.5 font-bold">${row.process}</td>
+                    <td class="p-3.5 font-mono text-xs">${row.order}</td>
+                    <td class="p-3.5 font-mono text-xs">${row.item}</td>
+                    <td class="p-3.5 font-bold text-slate-900">${row.reason}</td>
+                    <td class="p-3.5 font-bold text-blue-800">${row.dept}</td>
+                    <td class="p-3.5 text-center font-extrabold text-red-700 text-sm">${delayDays} 天</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 機故統計與圖表渲染
+        window.renderMachineAnalytics = function() {
+            const tbody = document.getElementById("machine-table-body");
+            tbody.innerHTML = "";
+
+            const now = new Date(); // 2026-10-10 21:00
+
+            const machineData = [
+                { dept: "金屬二課", item: "CM-26", start: "2026-10-01 09:30:00", end: "2026-10-03 11:30:00", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", note: "無", closed: "Y" },
+                { dept: "石墨銑床課", item: "CM-18", start: "2026-10-03 14:00:00", end: null, category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", note: "零件有現貨", closed: null },
+                { dept: "乾式製程課", item: "GM-25", start: "2026-10-05 08:00:00", end: "2026-10-09 00:00:00", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", note: "需追蹤系統穩定度", closed: "Y" },
+                { dept: "金屬三課", item: "CM-96", start: "2026-10-08 13:15:00", end: null, category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", note: "無", closed: null }
+            ];
+
+            let deptDaysMap = {};
+            let itemDaysMap = {};
+
+            machineData.forEach(m => {
+                let startDate = new Date(m.start);
+                let endDate = m.end ? new Date(m.end) : now;
+                let diffTime = Math.abs(endDate - startDate);
+                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // 累積停機天數
+
+                m.calculatedDays = diffDays;
+
+                deptDaysMap[m.dept] = (deptDaysMap[m.dept] || 0) + diffDays;
+                itemDaysMap[m.item] = (itemDaysMap[m.item] || 0) + diffDays;
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold">${m.dept}</td>
+                    <td class="p-3.5 font-bold text-blue-800">${m.item}</td>
+                    <td class="p-3.5 text-xs">${m.start}</td>
+                    <td class="p-3.5 text-xs">${m.end || '<span class="text-amber-600 font-extrabold">未修復 (持續計算)</span>'}</td>
+                    <td class="p-3.5 text-center font-extrabold text-red-700 text-sm">${diffDays} 天</td>
+                    <td class="p-3.5 font-bold">${m.category}</td>
+                    <td class="p-3.5">${m.desc}</td>
+                    <td class="p-3.5">${m.solution}</td>
+                    <td class="p-3.5 text-center font-bold ${m.closed === 'Y' ? 'text-emerald-700' : 'text-amber-600'}">${m.closed === 'Y' ? '已結案' : '處理中'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // 繪製依課別統計圖表
+            const ctxDept = document.getElementById('machineDeptChart').getContext('2d');
+            if (machineDeptChartInstance) machineDeptChartInstance.destroy();
+            machineDeptChartInstance = new Chart(ctxDept, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(deptDaysMap),
+                    datasets: [{
+                        label: '累積停機天數 (天)',
+                        data: Object.values(deptDaysMap),
+                        backgroundColor: 'rgba(79, 70, 229, 0.85)',
+                        borderColor: 'rgb(67, 56, 202)',
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                    scales: {
+                        y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                        x: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                    }
+                }
+            });
+
+            // 繪製依機台編號統計圖表
+            const ctxItem = document.getElementById('machineItemChart').getContext('2d');
+            if (machineItemChartInstance) machineItemChartInstance.destroy();
+            machineItemChartInstance = new Chart(ctxItem, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(itemDaysMap),
+                    datasets: [{
+                        label: '累積停機天數 (天)',
+                        data: Object.values(itemDaysMap),
+                        backgroundColor: 'rgba(217, 119, 6, 0.85)',
+                        borderColor: 'rgb(180, 83, 9)',
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                    scales: {
+                        y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                        x: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                    }
+                }
+            });
+        }
+
         window.exportChartPNG = function(canvasId, shiftName) {
             const canvas = document.getElementById(canvasId);
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
             
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height + 60; // 預留頂部空間繪製課別浮水印標題
+            tempCanvas.height = canvas.height + 60;
             const ctx = tempCanvas.getContext('2d');
             
-            // 純白背景
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-            // 繪製標註課別與班別的高清粗體黑字標題
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 20px sans-serif';
             ctx.textAlign = 'left';
             ctx.fillText(`製程課別：${dept} - ${shiftName}稼動與人力分析趨勢圖`, 20, 35);
 
-            // 將原圖畫在下方
             ctx.drawImage(canvas, 0, 60);
 
             const imageURL = tempCanvas.toDataURL('image/png', 1.0);
@@ -898,7 +1132,7 @@
                                                 dayTarget.midNote = dayTarget.midNote ? `${dayTarget.midNote}; ${String(val)}` : String(val);
                                             }
                                         }
-                                        else if (rowCategory.includes('夜班人機備註')) {
+                                        else if (rowCategory.includes('夜班-人機備註') || rowCategory.includes('夜班人機備註')) {
                                             if (val !== undefined && val !== null && String(val).trim() !== "") {
                                                 dayTarget.nightNote = dayTarget.nightNote ? `${dayTarget.nightNote}; ${String(val)}` : String(val);
                                             }
