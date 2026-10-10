@@ -23,12 +23,10 @@
                 <h1 class="text-xl font-bold tracking-wider">工廠中夜班 KPI 智慧管理系統</h1>
             </div>
             <div class="flex items-center space-x-4">
-                <!-- 連線狀態指示燈 -->
                 <div id="connection-status" class="flex items-center space-x-2 text-xs bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">
                     <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                     <span id="status-text" class="text-slate-300">連線檢查中...</span>
                 </div>
-                <!-- 用戶資訊與登出 -->
                 <div id="user-info-section" class="hidden flex items-center space-x-3">
                     <span id="user-display-name" class="text-sm font-medium text-blue-300"></span>
                     <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded transition shadow">
@@ -39,7 +37,7 @@
         </div>
     </header>
 
-    <!-- 登入畫面 (未登入時顯示) -->
+    <!-- 登入畫面 -->
     <main id="auth-container" class="flex-grow flex items-center justify-center px-4 py-12">
         <div class="bg-white max-w-md w-full rounded-2xl shadow-xl p-8 border border-slate-200">
             <div class="text-center mb-8">
@@ -64,7 +62,6 @@
                 </button>
             </form>
 
-            <!-- 快速註冊按鈕 -->
             <div class="mt-6 text-center border-t border-slate-100 pt-4">
                 <p class="text-xs text-slate-500 mb-2">尚未擁有帳號？</p>
                 <button onclick="openRegisterModal()" class="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline">
@@ -76,9 +73,9 @@
         </div>
     </main>
 
-    <!-- 快速註冊互動彈跳視窗 (Modal) -->
+    <!-- 快速註冊彈跳視窗 -->
     <div id="register-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6 border border-slate-200 transform transition-all">
+        <div class="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6 border border-slate-200">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-slate-900 flex items-center">
                     <i class="fa-solid fa-user-plus text-blue-600 mr-2"></i>快速註冊帳號
@@ -87,34 +84,31 @@
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
-            <p class="text-xs text-slate-500 mb-4">填寫以下資訊即可直接建立帳號並寫入資料庫名冊中。</p>
-            
             <form id="register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">英文名字 (English Name)</label>
-                    <input type="text" id="reg-english-name" required placeholder="例如: Alex Liu" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <input type="text" id="reg-english-name" required placeholder="例如: Alex Liu" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">電子郵件帳號 (Email)</label>
-                    <input type="email" id="reg-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <input type="email" id="reg-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">密碼 (Password)</label>
-                    <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
                 </div>
                 <div class="flex space-x-3 pt-2">
-                    <button type="button" onclick="closeRegisterModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-lg transition text-sm">取消</button>
-                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow text-sm">確認註冊</button>
+                    <button type="button" onclick="closeRegisterModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-lg text-sm font-medium">取消</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium shadow">確認註冊</button>
                 </div>
             </form>
             <div id="reg-error" class="mt-3 text-center text-xs text-red-600 font-medium"></div>
         </div>
     </div>
 
-    <!-- 主應用程式介面 (登入後顯示) -->
+    <!-- 主應用程式介面 -->
     <div id="app-container" class="hidden flex-grow flex flex-col max-w-7xl w-full mx-auto px-4 py-6">
         
-        <!-- 導覽分頁列 -->
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-3">
             <button onclick="switchAppTab('dashboard')" class="tab-btn active px-4 py-2 rounded-lg font-medium text-sm bg-blue-600 text-white shadow transition flex items-center space-x-2">
                 <i class="fa-solid fa-chart-line"></i><span>各課圖表分析</span>
@@ -137,16 +131,22 @@
                     <h2 class="text-lg font-bold text-slate-900">各課中夜班稼動與人力雙軸趨勢圖</h2>
                     <p class="text-xs text-slate-500">柱狀圖代表稼動率 (%)，折線圖代表人力配置，圖表下方自動帶入人機備註與人員紀律文字標籤。</p>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">選擇製程課別</label>
-                    <select id="chart-dept-select" onchange="renderCharts()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <!-- 動態帶入 -->
-                    </select>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">選擇製程課別</label>
+                        <select id="chart-dept-select" onchange="renderCharts()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
+                        </select>
+                    </div>
+                    <div class="self-end">
+                        <button onclick="exportAllChartsPNG()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-4 py-2.5 rounded-lg transition shadow flex items-center">
+                            <i class="fa-solid fa-images mr-1.5"></i>一鍵匯出所有 PNG
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 中班圖表 -->
+                <!-- 中班圖表與備註列表 -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -155,13 +155,20 @@
                                 <i class="fa-solid fa-download mr-1"></i>高畫質 PNG
                             </button>
                         </div>
-                        <div class="relative h-80">
+                        <div class="relative h-72">
                             <canvas id="midChart"></canvas>
+                        </div>
+                        <!-- 底部直接顯示異常與紀律標籤 -->
+                        <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 max-h-36 overflow-y-auto">
+                            <h4 class="text-xs font-bold text-amber-900 mb-1.5 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1"></i>中班人機備註與紀律紀錄</h4>
+                            <div id="mid-notes-container" class="space-y-1 text-xs text-slate-700">
+                                <!-- 動態填入 -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 夜班圖表 -->
+                <!-- 夜班圖表與備註列表 -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -170,15 +177,22 @@
                                 <i class="fa-solid fa-download mr-1"></i>高畫質 PNG
                             </button>
                         </div>
-                        <div class="relative h-80">
+                        <div class="relative h-72">
                             <canvas id="nightChart"></canvas>
+                        </div>
+                        <!-- 底部直接顯示異常與紀律標籤 -->
+                        <div class="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200 max-h-36 overflow-y-auto">
+                            <h4 class="text-xs font-bold text-indigo-900 mb-1.5 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1"></i>夜班人機備註與紀律紀錄</h4>
+                            <div id="night-notes-container" class="space-y-1 text-xs text-slate-700">
+                                <!-- 動態填入 -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 分頁 2: 總表分析 (近7天 / 當月) -->
+        <!-- 分頁 2: 總表分析 -->
         <div id="tab-summary" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4">
@@ -204,7 +218,6 @@
                             </tr>
                         </thead>
                         <tbody id="summary-table-body" class="divide-y divide-slate-100">
-                            <!-- 動態帶入 -->
                         </tbody>
                     </table>
                 </div>
@@ -221,17 +234,14 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         <select id="mgmt-dept-select" onchange="loadManagementData()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
-                            <!-- 動態帶入 -->
                         </select>
                         <select id="mgmt-date-select" onchange="loadManagementData()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500">
-                            <!-- 動態帶入 -->
                         </select>
                     </div>
                 </div>
 
                 <form id="mgmt-form" onsubmit="saveManagementData(event)" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- 中班資料區 -->
                         <div class="bg-amber-50/50 p-5 rounded-xl border border-amber-200 space-y-4">
                             <h3 class="font-bold text-amber-900 text-md flex items-center"><i class="fa-solid fa-sun text-amber-500 mr-2"></i>中班 (Mid-Shift) 數據填寫</h3>
                             <div class="grid grid-cols-3 gap-3">
@@ -250,15 +260,14 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">中班人機備註</label>
-                                <input type="text" id="mgmt-mid-note" placeholder="例如: 8號機沒人顧" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
+                                <input type="text" id="mgmt-mid-note" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">中班紀律</label>
-                                <input type="text" id="mgmt-mid-disc" placeholder="例如: 正常" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
+                                <input type="text" id="mgmt-mid-disc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
                             </div>
                         </div>
 
-                        <!-- 夜班資料區 -->
                         <div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-200 space-y-4">
                             <h3 class="font-bold text-indigo-900 text-md flex items-center"><i class="fa-solid fa-moon text-indigo-500 mr-2"></i>夜班 (Night-Shift) 數據填寫</h3>
                             <div class="grid grid-cols-3 gap-3">
@@ -277,11 +286,11 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">夜班人機備註</label>
-                                <input type="text" id="mgmt-night-note" placeholder="例如: 正常" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
+                                <input type="text" id="mgmt-night-note" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-600 mb-1">夜班紀律</label>
-                                <input type="text" id="mgmt-night-disc" placeholder="例如: 小王手機沒放手機櫃" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
+                                <input type="text" id="mgmt-night-disc" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm">
                             </div>
                         </div>
                     </div>
@@ -297,7 +306,6 @@
         <!-- 分頁 4: Excel 一鍵匯入匯出 -->
         <div id="tab-excel" class="hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 匯出 -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center mb-4 text-xl">
@@ -311,14 +319,13 @@
                     </button>
                 </div>
 
-                <!-- 匯入 -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4 text-xl">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
                         <h3 class="font-bold text-slate-900 text-lg mb-2">一鍵上傳/匯入 Excel 工作表</h3>
-                        <p class="text-xs text-slate-500 mb-6">上傳您的 Excel 檔案，系統將自動比對工作表名稱（如金屬一課、車床課等）與日期，一鍵更新至資料庫。</p>
+                        <p class="text-xs text-slate-500 mb-6">上傳您的 Excel 檔案，系統將自動比對工作表名稱與日期，一鍵更新至資料庫。</p>
                     </div>
                     <div>
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls" onchange="importExcelFile(event)" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
@@ -366,7 +373,6 @@
         let nightChartInstance = null;
         let currentSummaryPeriod = '7days';
 
-        // 檢查連線狀況
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
             const dot = document.getElementById("status-dot");
@@ -380,7 +386,6 @@
             }
         });
 
-        // 監聽 Auth 狀態
         onAuthStateChanged(auth, async (user) => {
             const authContainer = document.getElementById("auth-container");
             const appContainer = document.getElementById("app-container");
@@ -425,7 +430,6 @@
             const password = document.getElementById("login-password").value;
             const errDiv = document.getElementById("auth-error");
             errDiv.innerText = "";
-
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
@@ -440,17 +444,14 @@
             const password = document.getElementById("reg-password").value;
             const errDiv = document.getElementById("reg-error");
             errDiv.innerText = "";
-
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                
                 await set(ref(db, `users/${user.uid}`), {
                     email: email,
                     englishName: englishName,
                     createdAt: new Date().toISOString()
                 });
-
                 closeRegisterModal();
                 alert("註冊成功！已自動登入系統。");
             } catch (error) {
@@ -485,16 +486,9 @@
                     initialData[dept] = {};
                     DATES.forEach(date => {
                         initialData[dept][date] = {
-                            midManpower: 3,
-                            midTotalMachines: 20,
-                            midActiveMachines: 15,
-                            nightManpower: 2,
-                            nightTotalMachines: 20,
-                            nightActiveMachines: 12,
-                            midNote: '正常',
-                            nightNote: '正常',
-                            midDiscipline: '正常',
-                            nightDiscipline: '正常'
+                            midManpower: 3, midTotalMachines: 20, midActiveMachines: 15,
+                            nightManpower: 2, nightTotalMachines: 20, nightActiveMachines: 12,
+                            midNote: '', nightNote: '', midDiscipline: '', nightDiscipline: ''
                         };
                     });
                 });
@@ -549,6 +543,11 @@
             const midManpowerArr = [], midUtilArr = [], midLabelsArr = [];
             const nightManpowerArr = [], nightUtilArr = [], nightLabelsArr = [];
 
+            const midNotesContainer = document.getElementById("mid-notes-container");
+            const nightNotesContainer = document.getElementById("night-notes-container");
+            midNotesContainer.innerHTML = "";
+            nightNotesContainer.innerHTML = "";
+
             DATES.forEach(date => {
                 const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'', nightDiscipline:'' };
                 
@@ -561,7 +560,26 @@
                 let nightUtil = dayObj.nightTotalMachines > 0 ? ((dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100).toFixed(1) : 0;
                 nightUtilArr.push(nightUtil);
                 nightLabelsArr.push(`備註:${dayObj.nightNote || '無'} | 紀律:${dayObj.nightDiscipline || '正常'}`);
+
+                // 收集並渲染下方標籤
+                if (dayObj.midNote || (dayObj.midDiscipline && dayObj.midDiscipline !== '正常')) {
+                    const div = document.createElement("div");
+                    div.innerHTML = `<span class="font-semibold text-amber-800">${date}:</span> 備註: ${dayObj.midNote || '無'} | 紀律: ${dayObj.midDiscipline || '正常'}`;
+                    midNotesContainer.appendChild(div);
+                }
+                if (dayObj.nightNote || (dayObj.nightDiscipline && dayObj.nightDiscipline !== '正常')) {
+                    const div = document.createElement("div");
+                    div.innerHTML = `<span class="font-semibold text-indigo-800">${date}:</span> 備註: ${dayObj.nightNote || '無'} | 紀律: ${dayObj.nightDiscipline || '正常'}`;
+                    nightNotesContainer.appendChild(div);
+                }
             });
+
+            if (midNotesContainer.children.length === 0) {
+                midNotesContainer.innerHTML = `<div class="text-slate-400 italic">近期中班無異常備註或紀律紀錄</div>`;
+            }
+            if (nightNotesContainer.children.length === 0) {
+                nightNotesContainer.innerHTML = `<div class="text-slate-400 italic">近期夜班無異常備註或紀律紀錄</div>`;
+            }
 
             const ctxMid = document.getElementById('midChart').getContext('2d');
             if (midChartInstance) midChartInstance.destroy();
@@ -617,6 +635,22 @@
             document.body.removeChild(a);
         }
 
+        // 新增：一鍵依序匯出所有課別 PNG
+        window.exportAllChartsPNG = async function() {
+            const select = document.getElementById("chart-dept-select");
+            for (let i = 0; i < select.options.length; i++) {
+                select.selectedIndex = i;
+                renderCharts();
+                // 等待 Chart.js 渲染完成
+                await new Promise(resolve => setTimeout(resolve, 300));
+                let deptName = select.value;
+                exportChartPNG('midChart', `${deptName}_中班稼動分析`);
+                await new Promise(resolve => setTimeout(resolve, 200));
+                exportChartPNG('nightChart', `${deptName}_夜班稼動分析`);
+            }
+            alert("所有課別中夜班圖表已成功匯出 PNG！");
+        }
+
         window.setSummaryPeriod = function(period) {
             currentSummaryPeriod = period;
             document.getElementById('btn-period-7').className = period === '7days' ? 'px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white shadow' : 'px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300';
@@ -641,8 +675,8 @@
                     totalMidMp += Number(dayObj.midManpower);
                     totalNightMp += Number(dayObj.nightManpower);
 
-                    if (dayObj.midNote && dayObj.midNote !== '正常') remarks.push(`[中] ${dayObj.midNote}`);
-                    if (dayObj.nightNote && dayObj.nightNote !== '正常') remarks.push(`[夜] ${dayObj.nightNote}`);
+                    if (dayObj.midNote) remarks.push(`[中備] ${dayObj.midNote}`);
+                    if (dayObj.nightNote) remarks.push(`[夜備] ${dayObj.nightNote}`);
                     if (dayObj.midDiscipline && dayObj.midDiscipline !== '正常') remarks.push(`[中紀] ${dayObj.midDiscipline}`);
                     if (dayObj.nightDiscipline && dayObj.nightDiscipline !== '正常') remarks.push(`[夜紀] ${dayObj.nightDiscipline}`);
                 });
@@ -730,11 +764,9 @@
             XLSX.writeFile(wb, `工廠中夜班KPI總表_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
-        // 輔助函式：將 Excel 日期序列號或物件轉為 YYYY-MM-DD
         function parseExcelDate(val) {
             if (!val) return "";
             if (typeof val === 'number') {
-                // Excel 序列日期轉換
                 const utc_days = Math.floor(val - 25569);
                 const dateObj = new Date(utc_days * 86400 * 1000);
                 let y = dateObj.getUTCFullYear();
@@ -761,16 +793,13 @@
                     let matchedSheetsCount = 0;
 
                     workbook.SheetNames.forEach(sheetName => {
-                        // 模糊比對工作表名稱（只要符合預設部門列表之一即可）
                         let matchedDept = DEPARTMENTS.find(d => sheetName.includes(d) || d.includes(sheetName));
                         if (matchedDept) {
                             matchedSheetsCount++;
                             const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-                            
-                            // 建立日期欄位對應索引 (從第 1 行開始)
                             if (json.length >= 1) {
                                 let headerRow = json[0];
-                                let dateIndexMap = {}; // colIdx -> dateStr
+                                let dateIndexMap = {};
                                 
                                 for (let c = 1; c < headerRow.length; c++) {
                                     let parsedDate = parseExcelDate(headerRow[c]);
@@ -779,7 +808,6 @@
                                     }
                                 }
 
-                                // 逐列解析各 KPI 項目
                                 for (let r = 1; r < json.length; r++) {
                                     let rowCategory = String(json[r][0] || "").trim();
                                     if (!rowCategory) continue;
@@ -789,7 +817,6 @@
                                         let val = json[r][c];
 
                                         if (!updates[`departments/${matchedDept}/${dateStr}`]) {
-                                            // 預設帶入原先快取或預設值
                                             updates[`departments/${matchedDept}/${dateStr}`] = globalDataCache[matchedDept]?.[dateStr] || {
                                                 midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
                                                 nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
@@ -805,10 +832,26 @@
                                         else if (rowCategory.includes('夜班人力')) dayTarget.nightManpower = Number(val) || 0;
                                         else if (rowCategory.includes('夜班-總機台數') || rowCategory.includes('夜班總機台數')) dayTarget.nightTotalMachines = Number(val) || 0;
                                         else if (rowCategory.includes('夜班-稼動機台') || rowCategory.includes('夜班稼動機台')) dayTarget.nightActiveMachines = Number(val) || 0;
-                                        else if (rowCategory.includes('中班人機備註')) dayTarget.midNote = String(val || '');
-                                        else if (rowCategory.includes('夜班人機備註')) dayTarget.nightNote = String(val || '');
-                                        else if (rowCategory.includes('中班紀律')) dayTarget.midDiscipline = String(val || '');
-                                        else if (rowCategory.includes('夜班紀律')) dayTarget.nightDiscipline = String(val || '');
+                                        else if (rowCategory.includes('中班人機備註')) {
+                                            if (val !== undefined && val !== null && String(val).trim() !== "") {
+                                                dayTarget.midNote = dayTarget.midNote ? `${dayTarget.midNote}; ${String(val)}` : String(val);
+                                            }
+                                        }
+                                        else if (rowCategory.includes('夜班人機備註')) {
+                                            if (val !== undefined && val !== null && String(val).trim() !== "") {
+                                                dayTarget.nightNote = dayTarget.nightNote ? `${dayTarget.nightNote}; ${String(val)}` : String(val);
+                                            }
+                                        }
+                                        else if (rowCategory.includes('中班紀律')) {
+                                            if (val !== undefined && val !== null && String(val).trim() !== "") {
+                                                dayTarget.midDiscipline = String(val);
+                                            }
+                                        }
+                                        else if (rowCategory.includes('夜班紀律')) {
+                                            if (val !== undefined && val !== null && String(val).trim() !== "") {
+                                                dayTarget.nightDiscipline = String(val);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -819,7 +862,7 @@
                         await update(ref(db), updates);
                         alert(`成功解析 ${matchedSheetsCount} 個工作表並同步至 Firebase 資料庫！`);
                     } else {
-                        alert("未偵測到符合的工作表名稱（如：金屬一課、車床課等）或日期格式。");
+                        alert("未偵測到符合的工作表名稱或日期格式。");
                     }
                 } catch (err) {
                     alert("匯入解析失敗: " + err.message);
