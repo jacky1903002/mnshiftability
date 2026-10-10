@@ -410,7 +410,6 @@
             }
         });
 
-        // 註冊彈跳視窗控制
         window.openRegisterModal = function() {
             document.getElementById("register-modal").classList.remove("hidden");
             document.getElementById("reg-error").innerText = "";
@@ -420,7 +419,6 @@
             document.getElementById("register-modal").classList.add("hidden");
         }
 
-        // 登入送出
         window.handleLoginSubmit = async function(e) {
             e.preventDefault();
             const email = document.getElementById("login-email").value;
@@ -435,7 +433,6 @@
             }
         }
 
-        // 註冊送出（寫入 Firebase 認證與 users 名冊）
         window.handleRegisterSubmit = async function(e) {
             e.preventDefault();
             const englishName = document.getElementById("reg-english-name").value;
@@ -448,7 +445,6 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // 將註冊資料回寫到 firebase 的 users 名冊中
                 await set(ref(db, `users/${user.uid}`), {
                     email: email,
                     englishName: englishName,
@@ -466,7 +462,6 @@
             signOut(auth);
         }
 
-        // 分頁切換
         window.switchAppTab = function(tabName) {
             ['dashboard', 'summary', 'management', 'excel'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add("hidden");
@@ -490,16 +485,16 @@
                     initialData[dept] = {};
                     DATES.forEach(date => {
                         initialData[dept][date] = {
-                            midManpower: Math.floor(Math.random() * 4) + 3,
+                            midManpower: 3,
                             midTotalMachines: 20,
-                            midActiveMachines: Math.floor(Math.random() * 10) + 10,
-                            nightManpower: Math.floor(Math.random() * 3) + 2,
+                            midActiveMachines: 15,
+                            nightManpower: 2,
                             nightTotalMachines: 20,
-                            nightActiveMachines: Math.floor(Math.random() * 8) + 8,
-                            midNote: date === '2026-10-05' ? '機台保養' : '正常',
+                            nightActiveMachines: 12,
+                            midNote: '正常',
                             nightNote: '正常',
                             midDiscipline: '正常',
-                            nightDiscipline: date === '2026-10-08' ? '手機未置放手機櫃' : '正常'
+                            nightDiscipline: '正常'
                         };
                     });
                 });
@@ -725,7 +720,7 @@
                     ["夜班-總機台數", ...DATES.map(d => deptData[d]?.nightTotalMachines || 0)],
                     ["夜班-稼動機台", ...DATES.map(d => deptData[d]?.nightActiveMachines || 0)],
                     ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || "")],
-                    ["夜班人機備註", ...DRESS_CHECK_VAL = d => deptData[d]?.nightNote || ""],
+                    ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || "")],
                     ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || "")],
                     ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || "")]
                 ];
@@ -733,6 +728,25 @@
                 XLSX.utils.book_append_sheet(wb, ws, dept);
             });
             XLSX.writeFile(wb, `工廠中夜班KPI總表_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // 輔助函式：將 Excel 日期序列號或物件轉為 YYYY-MM-DD
+        function parseExcelDate(val) {
+            if (!val) return "";
+            if (typeof val === 'number') {
+                // Excel 序列日期轉換
+                const utc_days = Math.floor(val - 25569);
+                const dateObj = new Date(utc_days * 86400 * 1000);
+                let y = dateObj.getUTCFullYear();
+                let m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                let d = String(dateObj.getUTCDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            let str = String(val).trim();
+            if (str.length >= 10) {
+                return str.slice(0, 10).replace(/\//g, '-');
+            }
+            return str;
         }
 
         window.importExcelFile = function(e) {
@@ -744,39 +758,68 @@
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     let updates = {};
+                    let matchedSheetsCount = 0;
 
                     workbook.SheetNames.forEach(sheetName => {
-                        if (DEPARTMENTS.includes(sheetName)) {
+                        // 模糊比對工作表名稱（只要符合預設部門列表之一即可）
+                        let matchedDept = DEPARTMENTS.find(d => sheetName.includes(d) || d.includes(sheetName));
+                        if (matchedDept) {
+                            matchedSheetsCount++;
                             const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-                            if (json.length >= 11) {
-                                const headerDates = json[0].slice(1);
-                                headerDates.forEach((dateCol, idx) => {
-                                    if (!dateCol) return;
-                                    let dateStr = String(dateCol).slice(0, 10);
-                                    if (DATES.includes(dateStr)) {
-                                        updates[`departments/${sheetName}/${dateStr}`] = {
-                                            midManpower: Number(json[1][idx+1]) || 0,
-                                            midTotalMachines: Number(json[2][idx+1]) || 0,
-                                            midActiveMachines: Number(json[3][idx+1]) || 0,
-                                            nightManpower: Number(json[4][idx+1]) || 0,
-                                            nightTotalMachines: Number(json[5][idx+1]) || 0,
-                                            nightActiveMachines: Number(json[6][idx+1]) || 0,
-                                            midNote: String(json[7][idx+1] || ''),
-                                            nightNote: String(json[8][idx+1] || ''),
-                                            midDiscipline: String(json[9][idx+1] || ''),
-                                            nightDiscipline: String(json[10][idx+1] || '')
-                                        };
+                            
+                            // 建立日期欄位對應索引 (從第 1 行開始)
+                            if (json.length >= 1) {
+                                let headerRow = json[0];
+                                let dateIndexMap = {}; // colIdx -> dateStr
+                                
+                                for (let c = 1; c < headerRow.length; c++) {
+                                    let parsedDate = parseExcelDate(headerRow[c]);
+                                    if (DATES.includes(parsedDate)) {
+                                        dateIndexMap[c] = parsedDate;
                                     }
-                                });
+                                }
+
+                                // 逐列解析各 KPI 項目
+                                for (let r = 1; r < json.length; r++) {
+                                    let rowCategory = String(json[r][0] || "").trim();
+                                    if (!rowCategory) continue;
+
+                                    for (let c in dateIndexMap) {
+                                        let dateStr = dateIndexMap[c];
+                                        let val = json[r][c];
+
+                                        if (!updates[`departments/${matchedDept}/${dateStr}`]) {
+                                            // 預設帶入原先快取或預設值
+                                            updates[`departments/${matchedDept}/${dateStr}`] = globalDataCache[matchedDept]?.[dateStr] || {
+                                                midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
+                                                nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
+                                                midNote: '', nightNote: '', midDiscipline: '', nightDiscipline: ''
+                                            };
+                                        }
+
+                                        let dayTarget = updates[`departments/${matchedDept}/${dateStr}`];
+
+                                        if (rowCategory.includes('中班人力')) dayTarget.midManpower = Number(val) || 0;
+                                        else if (rowCategory.includes('中班-總機台數') || rowCategory.includes('中班總機台數')) dayTarget.midTotalMachines = Number(val) || 0;
+                                        else if (rowCategory.includes('中班-稼動機台') || rowCategory.includes('中班稼動機台')) dayTarget.midActiveMachines = Number(val) || 0;
+                                        else if (rowCategory.includes('夜班人力')) dayTarget.nightManpower = Number(val) || 0;
+                                        else if (rowCategory.includes('夜班-總機台數') || rowCategory.includes('夜班總機台數')) dayTarget.nightTotalMachines = Number(val) || 0;
+                                        else if (rowCategory.includes('夜班-稼動機台') || rowCategory.includes('夜班稼動機台')) dayTarget.nightActiveMachines = Number(val) || 0;
+                                        else if (rowCategory.includes('中班人機備註')) dayTarget.midNote = String(val || '');
+                                        else if (rowCategory.includes('夜班人機備註')) dayTarget.nightNote = String(val || '');
+                                        else if (rowCategory.includes('中班紀律')) dayTarget.midDiscipline = String(val || '');
+                                        else if (rowCategory.includes('夜班紀律')) dayTarget.nightDiscipline = String(val || '');
+                                    }
+                                }
                             }
                         }
                     });
 
-                    if (Object.keys(updates).length > 0) {
+                    if (Object.keys(updates).length > 0 && matchedSheetsCount > 0) {
                         await update(ref(db), updates);
-                        alert("Excel 資料成功比對並同步至 Firebase 資料庫！");
+                        alert(`成功解析 ${matchedSheetsCount} 個工作表並同步至 Firebase 資料庫！`);
                     } else {
-                        alert("未偵測到符合的工作表名稱或日期格式。");
+                        alert("未偵測到符合的工作表名稱（如：金屬一課、車床課等）或日期格式。");
                     }
                 } catch (err) {
                     alert("匯入解析失敗: " + err.message);
