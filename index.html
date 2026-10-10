@@ -724,6 +724,13 @@
             if (currentMgmtDate) mgmtDateSelect.value = currentMgmtDate;
         }
 
+        // 輔助函數：精準判斷備註或紀律是否為正常
+        function isNormalText(txt) {
+            if (!txt) return true;
+            const str = String(txt).trim();
+            return str === '' || str === '無' || str === '正常' || str === '無異常';
+        }
+
         window.renderCharts = function() {
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
             const deptData = globalDataCache[dept] || {};
@@ -756,7 +763,8 @@
                 nightUtilArr.push(nightUtil);
                 nightLabelsArr.push(`備註:${dayObj.nightNote || '無'} | 紀律:${dayObj.nightDiscipline || '正常'}`);
 
-                let midHasIssue = (dayObj.midNote && dayObj.midNote.trim() !== '') || (dayObj.midDiscipline && dayObj.midDiscipline.trim() !== '正常');
+                // 嚴格過濾：唯有備註或紀律不正常時才列出
+                let midHasIssue = !isNormalText(dayObj.midNote) || !isNormalText(dayObj.midDiscipline);
                 if (midHasIssue) {
                     midHasException = true;
                     const div = document.createElement("div");
@@ -765,7 +773,7 @@
                     midNotesContainer.appendChild(div);
                 }
 
-                let nightHasIssue = (dayObj.nightNote && dayObj.nightNote.trim() !== '') || (dayObj.nightDiscipline && dayObj.nightDiscipline.trim() !== '正常');
+                let nightHasIssue = !isNormalText(dayObj.nightNote) || !isNormalText(dayObj.nightDiscipline);
                 if (nightHasIssue) {
                     nightHasException = true;
                     const div = document.createElement("div");
@@ -776,10 +784,10 @@
             });
 
             if (!midHasException) {
-                midNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期中班運作正常</div>`;
+                midNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期中班運作正常，無異常備註或紀律問題</div>`;
             }
             if (!nightHasException) {
-                nightNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期夜班運作正常</div>`;
+                nightNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期夜班運作正常，無異常備註或紀律問題</div>`;
             }
 
             const ctxMid = document.getElementById('midChart').getContext('2d');
