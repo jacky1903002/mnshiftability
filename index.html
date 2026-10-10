@@ -290,47 +290,58 @@
             </div>
         </div>
 
-        <!-- 分頁 4: 機故統計與歷史分析 -->
-        <div id="tab-machine" class="hidden space-y-6">
+        <!-- 分頁 4: 機故統計與歷史分析 (滿版圖表 + 滿版表格) -->
+        <div id="tab-machine" class="hidden space-y-8">
+            
+            <!-- 區塊 A: 滿版圖表分析工作表 -->
             <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-6">
-                <div class="flex flex-wrap justify-between items-center gap-4">
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b-2 border-slate-200 pb-4">
                     <div>
                         <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
-                            <i class="fa-solid fa-gears text-indigo-600 mr-2"></i>機台故障統計與歷史分析 (含雙柱圖表對比)
+                            <i class="fa-solid fa-chart-bar text-indigo-600 mr-2"></i>機台故障統計與歷史分析圖表 (滿版顯示)
                         </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">圖表採雙柱顯示（已結案 vs 未結案）。支援線上新增/刪除列位、歷史結案狀態切換與高清圖表匯出。</p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">橫條圖由上而下依累積停機天數由多到少排序，支援已結案與未結案雙向對比。</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="exportMachineChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-download mr-1.5"></i>匯出機故統計 PNG
-                        </button>
-                        <button onclick="addMachineRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-plus mr-1.5"></i>新增機故異常列
-                        </button>
-                    </div>
+                    <button onclick="exportMachineChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-download mr-1.5"></i>匯出機故統計圖表 PNG
+                    </button>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="machine-charts-container">
-                    <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-300 shadow-sm">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-extrabold text-slate-950 text-sm">依「課別」統計歷史停機 (已結案 vs 未結案)</h3>
-                            <button onclick="exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別雙柱分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                            <h3 class="font-extrabold text-slate-950 text-sm">依「課別」統計歷史停機 (排序由多到少)</h3>
+                            <button onclick="exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
                         </div>
-                        <div class="relative h-72">
+                        <div class="relative h-96 w-full">
                             <canvas id="machineDeptChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-300 shadow-sm">
+                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-extrabold text-slate-950 text-sm">依「機台編號」統計歷史停機 (已結案 vs 未結案)</h3>
-                            <button onclick="exportSingleCanvasPNG('machineItemChart', '機故統計_依機台雙柱分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                            <h3 class="font-extrabold text-slate-950 text-sm">依「機台編號」統計歷史停機 (排序由多到少)</h3>
+                            <button onclick="exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
                         </div>
-                        <div class="relative h-72">
+                        <div class="relative h-96 w-full">
                             <canvas id="machineItemChart"></canvas>
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <!-- 區塊 B: 滿版歷史明細工作表 -->
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
+                            <i class="fa-solid fa-table-list text-blue-700 mr-2"></i>機台故障歷史明細工作表 (滿版顯示)
+                        </h2>
+                        <p class="text-xs font-bold text-slate-700 mt-1">支援線上即時新增、刪除機故記錄與結案狀態切換。</p>
+                    </div>
+                    <button onclick="addMachineRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-plus mr-1.5"></i>新增機故異常列
+                    </button>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
@@ -352,6 +363,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
 
         <!-- 分頁 5: 資料填寫與管理 -->
@@ -472,12 +484,9 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue, child, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 註冊 PWA Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker 註冊成功:', reg.scope))
-                    .catch(err => console.log('Service Worker 註冊失敗:', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
             });
         }
 
@@ -530,7 +539,6 @@
             { dept: "金屬三課", item: "CM-96", start: "2026-10-08 13:15:00", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
         ];
 
-        // 手機/網頁模式切換函數
         let isMobileMode = false;
         window.toggleDeviceMode = function() {
             isMobileMode = !isMobileMode;
@@ -724,7 +732,6 @@
             if (currentMgmtDate) mgmtDateSelect.value = currentMgmtDate;
         }
 
-        // 輔助函數：精準判斷備註或紀律是否為正常
         function isNormalText(txt) {
             if (!txt) return true;
             const str = String(txt).trim();
@@ -763,7 +770,6 @@
                 nightUtilArr.push(nightUtil);
                 nightLabelsArr.push(`備註:${dayObj.nightNote || '無'} | 紀律:${dayObj.nightDiscipline || '正常'}`);
 
-                // 嚴格過濾：唯有備註或紀律不正常時才列出
                 let midHasIssue = !isNormalText(dayObj.midNote) || !isNormalText(dayObj.midDiscipline);
                 if (midHasIssue) {
                     midHasException = true;
@@ -784,10 +790,10 @@
             });
 
             if (!midHasException) {
-                midNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期中班運作正常，無異常備註或紀律問題</div>`;
+                midNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期中班運作正常</div>`;
             }
             if (!nightHasException) {
-                nightNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期夜班運作正常，無異常備註或紀律問題</div>`;
+                nightNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期夜班運作正常</div>`;
             }
 
             const ctxMid = document.getElementById('midChart').getContext('2d');
@@ -882,6 +888,7 @@
             renderQualityTable();
         }
 
+        // 渲染「機故統計與歷史分析」：滿版表格 + 滿版橫條圖（由多到少排序）
         window.renderMachineAnalytics = function() {
             const tbody = document.getElementById("machine-table-body");
             tbody.innerHTML = "";
@@ -947,9 +954,17 @@
                 tbody.appendChild(tr);
             });
 
-            const deptLabels = Array.from(allDepts);
-            const deptClosedArr = deptLabels.map(d => deptClosedMap[d] || 0);
-            const deptUnclosedArr = deptLabels.map(d => deptUnclosedMap[d] || 0);
+            // 依「課別」計算總停機天數並由多到少排序
+            let deptList = Array.from(allDepts).map(d => {
+                let closed = deptClosedMap[d] || 0;
+                let unclosed = deptUnclosedMap[d] || 0;
+                return { dept: d, closed, unclosed, total: closed + unclosed };
+            });
+            deptList.sort((a, b) => b.total - a.total);
+
+            const deptLabels = deptList.map(item => item.dept);
+            const deptClosedArr = deptList.map(item => item.closed);
+            const deptUnclosedArr = deptList.map(item => item.unclosed);
 
             const ctxDept = document.getElementById('machineDeptChart').getContext('2d');
             if (machineDeptChartInstance) machineDeptChartInstance.destroy();
@@ -958,23 +973,32 @@
                 data: {
                     labels: deptLabels,
                     datasets: [
-                        { label: '已結案', data: deptClosedArr, backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案/處理中', data: deptUnclosedArr, backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                        { label: '已結案停機天數', data: deptClosedArr, backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                        { label: '未結案/處理中停機天數', data: deptUnclosedArr, backgroundColor: 'rgba(239, 68, 68, 0.85)' }
                     ]
                 },
                 options: {
+                    indexAxis: 'y', // 改為橫條顯示
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
                     scales: {
-                        y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
-                        x: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                        x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                        y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
                     }
                 }
             });
 
-            const itemLabels = Array.from(allItems);
-            const itemClosedArr = itemLabels.map(i => itemClosedMap[i] || 0);
-            const itemUnclosedArr = itemLabels.map(i => itemUnclosedMap[i] || 0);
+            // 依「機台編號」計算總停機天數並由多到少排序
+            let itemList = Array.from(allItems).map(i => {
+                let closed = itemClosedMap[i] || 0;
+                let unclosed = itemUnclosedMap[i] || 0;
+                return { item: i, closed, unclosed, total: closed + unclosed };
+            });
+            itemList.sort((a, b) => b.total - a.total);
+
+            const itemLabels = itemList.map(item => item.item);
+            const itemClosedArr = itemList.map(item => item.closed);
+            const itemUnclosedArr = itemList.map(item => item.unclosed);
 
             const ctxItem = document.getElementById('machineItemChart').getContext('2d');
             if (machineItemChartInstance) machineItemChartInstance.destroy();
@@ -983,16 +1007,17 @@
                 data: {
                     labels: itemLabels,
                     datasets: [
-                        { label: '已結案', data: itemClosedArr, backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案/處理中', data: itemUnclosedArr, backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                        { label: '已結案停機天數', data: itemClosedArr, backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                        { label: '未結案/處理中停機天數', data: itemUnclosedArr, backgroundColor: 'rgba(239, 68, 68, 0.85)' }
                     ]
                 },
                 options: {
+                    indexAxis: 'y', // 改為橫條顯示
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
                     scales: {
-                        y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
-                        x: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                        x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                        y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
                     }
                 }
             });
@@ -1027,9 +1052,8 @@
             ctx.fillText(`工廠統計報表：${titleName}`, 20, 35);
             ctx.drawImage(canvas, 0, 60);
 
-            const imageURL = tempCanvas.toDataURL('image/png', 1.0);
             const a = document.createElement('a');
-            a.href = imageURL;
+            a.href = tempCanvas.toDataURL('image/png', 1.0);
             a.download = `${titleName}.png`;
             document.body.appendChild(a);
             a.click();
@@ -1037,9 +1061,9 @@
         }
 
         window.exportMachineChartsPNG = function() {
-            exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別雙柱分析');
-            setTimeout(() => exportSingleCanvasPNG('machineItemChart', '機故統計_依機台雙柱分析'), 300);
-            alert("機故雙柱統計圖表已全數匯出高清 PNG！");
+            exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析');
+            setTimeout(() => exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析'), 300);
+            alert("機故橫條統計圖表已全數匯出高清 PNG！");
         }
 
         window.exportChartPNG = function(canvasId, shiftName) {
