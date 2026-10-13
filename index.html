@@ -252,7 +252,7 @@
             </div>
         </div>
 
-        <!-- 分頁 3: 品質異常未處理 (已加入一鍵匯出入與欄位選單) -->
+        <!-- 分頁 3: 品質異常未處理 -->
         <div id="tab-quality" class="hidden space-y-6">
             <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-4">
@@ -298,7 +298,7 @@
             </div>
         </div>
 
-        <!-- 分頁 4: 機故統計與歷史分析 (已加入一鍵匯出入與下拉選單) -->
+        <!-- 分頁 4: 機故統計與歷史分析 -->
         <div id="tab-machine" class="hidden space-y-8">
             
             <!-- 區塊 A: 滿版圖表分析工作表 -->
@@ -337,14 +337,14 @@
                 </div>
             </div>
 
-            <!-- 區塊 B: 滿版歷史明細工作表 -->
+            <!-- 區塊 B: 機台故障歷史明細 -->
             <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-4">
                     <div>
                         <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
-                            <i class="fa-solid fa-table-list text-blue-700 mr-2"></i>機台故障歷史明細工作表 (滿版顯示)
+                            <i class="fa-solid fa-table-list text-blue-700 mr-2"></i>機台故障歷史明細
                         </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">支援一鍵匯出/匯入 Excel、時間日期選擇器與課別下拉選單。</p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">支援一鍵匯出/匯入 Excel、日期選擇器與課別下拉選單。</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button onclick="addMachineRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
@@ -365,8 +365,8 @@
                             <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
                                 <th class="p-3.5">課別</th>
                                 <th class="p-3.5">機台編號</th>
-                                <th class="p-3.5">異常開始時間</th>
-                                <th class="p-3.5">修復完成時間 (空白未修)</th>
+                                <th class="p-3.5">異常開始日期</th>
+                                <th class="p-3.5">修復完成日期 (空白表未修)</th>
                                 <th class="p-3.5 text-center text-red-700">累積停機天數</th>
                                 <th class="p-3.5">異常原因分類</th>
                                 <th class="p-3.5">異常原因詳述</th>
@@ -527,7 +527,6 @@
             "車床課D3(自)", "車床課D3(手)", "石墨銑床課", "製造五部"
         ];
 
-        // 責任單位與課別下拉選單清單
         const RESPONSIBLE_UNITS = [
             "金屬一課", "金屬二課", "金屬三課", "後處理", "石墨銑床課", 
             "線切割課", "車床課", "溼式製程課", "乾式製程課", "產品開發", 
@@ -563,10 +562,10 @@
         ];
 
         let localMachineData = [
-            { dept: "金屬二課", item: "CM-26", start: "2026-10-01T09:30", end: "2026-10-03T11:30", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", closed: "Y" },
-            { dept: "石墨銑床課", item: "CM-18", start: "2026-10-03T14:00", end: "", category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", closed: "" },
-            { dept: "乾式製程課", item: "GM-25", start: "2026-10-05T08:00", end: "2026-10-09T00:00", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", closed: "Y" },
-            { dept: "金屬三課", item: "CM-96", start: "2026-10-08T13:15", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
+            { dept: "金屬二課", item: "CM-26", start: "2026-10-01", end: "2026-10-03", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", closed: "Y" },
+            { dept: "石墨銑床課", item: "CM-18", start: "2026-10-03", end: "", category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", closed: "" },
+            { dept: "乾式製程課", item: "GM-25", start: "2026-10-05", end: "2026-10-09", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", closed: "Y" },
+            { dept: "金屬三課", item: "CM-96", start: "2026-10-08", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
         ];
 
         let isMobileMode = false;
@@ -878,7 +877,7 @@
         }
 
         // ==========================================
-        // 品質異常未處理 (帶下拉選單、日期選取器、結案顏色與匯出入)
+        // 品質異常未處理
         // ==========================================
         window.renderQualityTable = function() {
             const tbody = document.getElementById("quality-table-body");
@@ -890,7 +889,6 @@
                 let diffTime = currentDateObj - notifyDateObj;
                 let delayDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-                // 結案狀態顏色樣式
                 let statusColorClass = row.status === "已結案" ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-amber-100 text-amber-800 border-amber-300";
 
                 const tr = document.createElement("tr");
@@ -989,7 +987,7 @@
         }
 
         // ==========================================
-        // 機故統計與歷史分析 (帶下拉選單、日期時間選擇器與匯出入)
+        // 機故統計與歷史分析
         // ==========================================
         window.renderMachineAnalytics = function() {
             const tbody = document.getElementById("machine-table-body");
@@ -1043,8 +1041,8 @@
                         </select>
                     </td>
                     <td class="p-3"><input type="text" value="${m.item || ''}" onchange="updateMachineData(${index}, 'item', this.value)" class="w-20 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
-                    <td class="p-3"><input type="datetime-local" value="${m.start || ''}" onchange="updateMachineData(${index}, 'start', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3"><input type="datetime-local" value="${m.end || ''}" onchange="updateMachineData(${index}, 'end', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                    <td class="p-3"><input type="date" value="${m.start || ''}" onchange="updateMachineData(${index}, 'start', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                    <td class="p-3"><input type="date" value="${m.end || ''}" onchange="updateMachineData(${index}, 'end', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
                     <td class="p-3 text-center font-extrabold text-red-700 text-sm">${diffDays} 天</td>
                     <td class="p-3"><input type="text" value="${m.category || ''}" onchange="updateMachineData(${index}, 'category', this.value)" class="w-24 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
                     <td class="p-3"><input type="text" value="${m.desc || ''}" onchange="updateMachineData(${index}, 'desc', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
@@ -1060,7 +1058,6 @@
                 tbody.appendChild(tr);
             });
 
-            // 依「課別」排序橫條圖
             let deptList = Array.from(allDepts).map(d => {
                 let closed = deptClosedMap[d] || 0;
                 let unclosed = deptUnclosedMap[d] || 0;
@@ -1090,7 +1087,6 @@
                 }
             });
 
-            // 依「機台編號」排序橫條圖
             let itemList = Array.from(allItems).map(i => {
                 let closed = itemClosedMap[i] || 0;
                 let unclosed = itemUnclosedMap[i] || 0;
@@ -1122,7 +1118,7 @@
         }
 
         window.addMachineRow = function() {
-            localMachineData.push({ dept: "金屬一課", item: "CM-99", start: "2026-10-09T08:00", end: "", category: "機械零件", desc: "新登錄故障", solution: "待處理", closed: "" });
+            localMachineData.push({ dept: "金屬一課", item: "CM-99", start: "2026-10-09", end: "", category: "機械零件", desc: "新登錄故障", solution: "待處理", closed: "" });
             renderMachineAnalytics();
         }
 
@@ -1139,7 +1135,7 @@
         window.exportMachineToExcel = function() {
             const wb = XLSX.utils.book_new();
             let rows = [
-                ["課別", "機台編號", "異常開始時間", "修復完成時間", "異常原因分類", "異常原因詳述", "處理對策", "結案狀態"]
+                ["課別", "機台編號", "異常開始日期", "修復完成日期", "異常原因分類", "異常原因詳述", "處理對策", "結案狀態"]
             ];
             localMachineData.forEach(m => {
                 rows.push([m.dept, m.item, m.start, m.end, m.category, m.desc, m.solution, m.closed === 'Y' ? '已結案' : '未結案']);
@@ -1169,8 +1165,8 @@
                             localMachineData.push({
                                 dept: row[0] || "金屬一課",
                                 item: row[1] || "",
-                                start: row[2] || "2026-10-01T08:00",
-                                end: row[3] || "",
+                                start: row[2] ? String(row[2]).slice(0,10) : "2026-10-01",
+                                end: row[3] ? String(row[3]).slice(0,10) : "",
                                 category: row[4] || "",
                                 desc: row[5] || "",
                                 solution: row[6] || "",
