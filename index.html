@@ -169,7 +169,10 @@
                         <select id="chart-dept-select" onchange="renderCharts()" class="px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold focus:ring-2 focus:ring-blue-600">
                         </select>
                     </div>
-                    <div class="self-end">
+                    <div class="self-end flex items-center gap-2">
+                        <button onclick="saveDashboardToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2.5 rounded-lg transition shadow flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                        </button>
                         <button onclick="exportAllChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2.5 rounded-lg transition shadow flex items-center">
                             <i class="fa-solid fa-images mr-1.5"></i>一鍵匯出全課 PNG
                         </button>
@@ -223,14 +226,19 @@
         <!-- 分頁 2: 總表分析與趨勢建議 -->
         <div id="tab-summary" class="hidden space-y-6">
             <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
                     <div>
                         <h2 class="text-xl font-extrabold text-slate-950">全廠各課 KPI 稼動率趨勢分析與專業建議</h2>
                         <p class="text-xs font-bold text-slate-700 mt-1">彙整各製程課之中夜班平均稼動率表現，並針對稼動瓶頸提出精準改善建議。</p>
                     </div>
-                    <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg border-2 border-slate-300">
-                        <button onclick="setSummaryPeriod('7days')" id="btn-period-7" class="px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow">近七天分析</button>
-                        <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (10月) 總評</button>
+                    <div class="flex items-center space-x-3 flex-wrap gap-2">
+                        <button onclick="saveSummaryToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                        </button>
+                        <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg border-2 border-slate-300">
+                            <button onclick="setSummaryPeriod('7days')" id="btn-period-7" class="px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow">近七天分析</button>
+                            <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (10月) 總評</button>
+                        </div>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -265,6 +273,9 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <button onclick="addQualityRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-plus mr-1.5"></i>新增品質異常列
+                        </button>
+                        <button onclick="saveQualityToFirebase()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
                         </button>
                         <button onclick="exportQualityToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
@@ -310,9 +321,14 @@
                         </h2>
                         <p class="text-xs font-bold text-slate-700 mt-1">橫條圖由上而下依累積停機天數由多到少排序，支援已結案與未結案雙向對比。</p>
                     </div>
-                    <button onclick="exportMachineChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
-                        <i class="fa-solid fa-download mr-1.5"></i>匯出機故統計圖表 PNG
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="saveMachineToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                        </button>
+                        <button onclick="exportMachineChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-download mr-1.5"></i>匯出機故統計圖表 PNG
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -349,6 +365,9 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <button onclick="addMachineRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-plus mr-1.5"></i>新增機故異常列
+                        </button>
+                        <button onclick="saveMachineToFirebase()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
                         </button>
                         <button onclick="exportMachineToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
@@ -717,6 +736,16 @@
                 });
                 await set(ref(db, 'departments'), initialData);
             }
+
+            const qualSnap = await get(child(ref(db), 'qualityIssues'));
+            if (!qualSnap.exists()) {
+                await set(ref(db, 'qualityIssues'), localQualityData);
+            }
+
+            const machSnap = await get(child(ref(db), 'machineHistory'));
+            if (!machSnap.exists()) {
+                await set(ref(db, 'machineHistory'), localMachineData);
+            }
         }
 
         function fetchAllData() {
@@ -726,10 +755,22 @@
                     populateDropdowns();
                     renderCharts();
                     renderSummaryTable();
-                    renderQualityTable();
-                    renderMachineAnalytics();
                     loadManagementData();
                     updateLastUpdateTime();
+                }
+            });
+
+            onValue(ref(db, 'qualityIssues'), (snapshot) => {
+                if (snapshot.exists()) {
+                    localQualityData = snapshot.val() || [];
+                    renderQualityTable();
+                }
+            });
+
+            onValue(ref(db, 'machineHistory'), (snapshot) => {
+                if (snapshot.exists()) {
+                    localMachineData = snapshot.val() || [];
+                    renderMachineAnalytics();
                 }
             });
         }
@@ -765,6 +806,47 @@
             if (!txt) return true;
             const str = String(txt).trim();
             return str === '' || str === '無' || str === '正常' || str === '無異常';
+        }
+
+        // ==========================================
+        // 各分頁「儲存至雲端 firebase」按鈕專屬功能
+        // ==========================================
+        window.saveDashboardToFirebase = async function() {
+            const dept = document.getElementById("chart-dept-select").value;
+            if (!dept) return;
+            try {
+                await set(ref(db, `departments/${dept}`), globalDataCache[dept]);
+                alert(`「各課圖表分析」(${dept}) 資料已成功儲存至 Firebase！`);
+            } catch (err) {
+                alert("儲存失敗: " + err.message);
+            }
+        }
+
+        window.saveSummaryToFirebase = async function() {
+            try {
+                await set(ref(db, 'departments'), globalDataCache);
+                alert("「總表分析與建議」全廠資料已成功儲存至 Firebase！");
+            } catch (err) {
+                alert("儲存失敗: " + err.message);
+            }
+        }
+
+        window.saveQualityToFirebase = async function() {
+            try {
+                await set(ref(db, 'qualityIssues'), localQualityData);
+                alert("「品質異常未處理」清單已成功儲存至 Firebase！");
+            } catch (err) {
+                alert("儲存失敗: " + err.message);
+            }
+        }
+
+        window.saveMachineToFirebase = async function() {
+            try {
+                await set(ref(db, 'machineHistory'), localMachineData);
+                alert("「機故統計與歷史」資料已成功儲存至 Firebase！");
+            } catch (err) {
+                alert("儲存失敗: " + err.message);
+            }
         }
 
         window.renderCharts = function() {
