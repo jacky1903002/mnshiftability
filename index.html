@@ -1,1520 +1,1665 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工廠中夜班 KPI 智慧管理系統 - PWA 行動企業版</title>
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#58cc02">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (xlsx) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <style>
-        .mobile-frame-mode {
-            max-width: 414px !important;
-            margin: 2rem auto !important;
-            border: 12px solid #1e293b !important;
-            border-radius: 40px !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
-            overflow: hidden !important;
-            background: #ffffff !important;
-        }
-    </style>
-</head>
-<body class="bg-slate-100 text-slate-950 font-sans antialiased min-h-screen flex flex-col font-bold transition-all duration-300" id="body-wrapper">
-
-    <!-- 頂部企業級導覽列 -->
-    <header class="bg-slate-900 text-white border-b border-slate-300 shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-3.5 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 p-2 rounded-lg text-white shadow-md">
-                    <i class="fa-solid fa-industry text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-extrabold tracking-wider text-white">工廠中夜班 KPI 系統</h1>
-                    <p class="text-xs text-slate-300 font-semibold">PWA Mobile & Web Enterprise Edition</p>
-                </div>
+<!-- 頂部企業級導覽列 -->
+<header class="bg-slate-900 text-white border-b border-slate-300 shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3.5 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-2 rounded-lg text-white shadow-md">
+                <i class="fa-solid fa-industry text-xl"></i>
             </div>
-            <div class="flex items-center space-x-4">
-                <button onclick="toggleDeviceMode()" id="device-mode-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg transition shadow font-extrabold flex items-center space-x-1.5">
-                    <i class="fa-solid fa-mobile-screen-button"></i><span id="device-mode-text">切換手機模式</span>
+            <div>
+                <h1 class="text-lg font-extrabold tracking-wider text-white">工廠中夜班 KPI 系統</h1>
+                <p class="text-xs text-slate-300 font-semibold">PWA Mobile & Web Enterprise Edition</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="toggleDeviceMode()" id="device-mode-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg transition shadow font-extrabold flex items-center space-x-1.5">
+                <i class="fa-solid fa-mobile-screen-button"></i><span id="device-mode-text">切換手機模式</span>
+            </button>
+            <div id="last-update-display" class="hidden md:flex items-center space-x-1.5 text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 font-bold">
+                <i class="fa-regular fa-clock text-blue-400"></i>
+                <span>最後更新: <span id="update-time-text">--</span></span>
+            </div>
+            <div id="connection-status" class="hidden md:flex items-center space-x-2 text-xs bg-slate-800 px-3.5 py-1.5 rounded-full border border-slate-700 shadow-inner">
+                <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="status-text" class="text-slate-200 font-bold">連線檢查中...</span>
+            </div>
+            <div id="user-info-section" class="hidden flex items-center space-x-3 bg-slate-800 px-4 py-1.5 rounded-lg border border-slate-700">
+                <span id="user-display-name" class="text-xs font-bold text-blue-300"></span>
+                <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-500 text-white text-xs px-2.5 py-1 rounded transition shadow font-bold">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
                 </button>
-                <div id="last-update-display" class="hidden md:flex items-center space-x-1.5 text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 font-bold">
-                    <i class="fa-regular fa-clock text-blue-400"></i>
-                    <span>最後更新: <span id="update-time-text">--</span></span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 登入畫面 -->
+<main id="auth-container" class="flex-grow flex items-center justify-center px-4 py-12 bg-slate-50">
+    <div class="bg-white border-2 border-slate-300 max-w-md w-full rounded-2xl shadow-2xl p-8">
+        <div class="text-center mb-8">
+            <div class="bg-blue-100 text-blue-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl border border-blue-300 shadow-inner">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-950">系統身分驗證</h2>
+            <p class="text-xs font-bold text-slate-600 mt-1">請登入您的授權帳號以存取企業排班與稼動資料</p>
+        </div>
+
+        <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">電子郵件 (Email)</label>
+                <input type="email" id="login-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">密碼 (Password)</label>
+                <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2.5 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
+            </div>
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-extrabold py-3 rounded-lg transition shadow-lg text-sm">
+                安全登入系統
+            </button>
+        </form>
+
+        <div class="mt-6 text-center border-t-2 border-slate-200 pt-4">
+            <p class="text-xs font-bold text-slate-700 mb-2">內部同仁尚未開通帳號？</p>
+            <button onclick="openRegisterModal()" class="text-sm font-extrabold text-blue-700 hover:underline">
+                <i class="fa-solid fa-user-plus mr-1"></i>申請快速註冊通道
+            </button>
+        </div>
+        <div id="auth-error" class="mt-4 text-center text-xs text-red-700 font-extrabold"></div>
+    </div>
+</main>
+
+<!-- 快速註冊彈跳視窗 -->
+<div id="register-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-400 max-w-md w-full rounded-2xl shadow-2xl p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-extrabold text-slate-950 flex items-center">
+                <i class="fa-solid fa-user-plus text-blue-700 mr-2"></i>快速註冊帳號
+            </h3>
+            <button onclick="closeRegisterModal()" class="text-slate-600 hover:text-slate-950 text-base font-extrabold">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <form id="register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">英文名字 (English Name)</label>
+                <input type="text" id="reg-english-name" required placeholder="例如: Alex Liu" class="w-full px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">電子郵件帳號 (Email)</label>
+                <input type="email" id="reg-email" required placeholder="name@company.com" class="w-full px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">密碼 (Password)</label>
+                <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+            </div>
+            <div class="flex space-x-3 pt-2">
+                <button type="button" onclick="closeRegisterModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900 py-2.5 rounded-lg text-sm font-extrabold">取消</button>
+                <button type="submit" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white py-2.5 rounded-lg text-sm font-extrabold shadow">完成註冊</button>
+            </div>
+        </form>
+        <div id="reg-error" class="mt-3 text-center text-xs text-red-700 font-extrabold"></div>
+    </div>
+</div>
+
+<!-- 主應用程式介面 -->
+<div id="app-container" class="hidden flex-grow flex flex-col max-w-7xl w-full mx-auto px-6 py-6 bg-white">
+    
+    <!-- 分頁導覽列 -->
+    <div class="flex flex-wrap gap-2 mb-6 border-b-2 border-slate-300 pb-3 overflow-x-auto">
+        <button onclick="switchAppTab('dashboard')" class="tab-btn active px-4 py-2 rounded-xl text-xs bg-blue-700 text-white shadow-md transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
+            <i class="fa-solid fa-chart-line"></i><span>各課圖表分析</span>
+        </button>
+        <button onclick="switchAppTab('summary')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
+            <i class="fa-solid fa-table-cells"></i><span>總表分析與建議</span>
+        </button>
+        <button onclick="switchAppTab('quality')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i><span>品質異常未處理</span>
+        </button>
+        <button onclick="switchAppTab('machine')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
+            <i class="fa-solid fa-gears text-indigo-600"></i><span>機故統計與歷史</span>
+        </button>
+        <button onclick="switchAppTab('management')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
+            <i class="fa-solid fa-pen-to-square"></i><span>資料填寫與管理</span>
+        </button>
+        <button onclick="switchAppTab('excel')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
+            <i class="fa-solid fa-file-excel text-emerald-700"></i><span>Excel 匯入匯出</span>
+        </button>
+    </div>
+
+    <!-- 分頁 1: 各課圖表分析 -->
+    <div id="tab-dashboard" class="space-y-6">
+        <div class="bg-slate-50 border-2 border-slate-300 p-6 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-extrabold text-slate-950">各課中夜班稼動與人力雙軸趨勢分析</h2>
+                <p class="text-xs font-bold text-slate-700 mt-1">柱狀圖表示機台稼動率 (%)，折線圖表示班別人力配置。匯出 PNG 時將自動標註課別與高清粗體黑字。</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-800 mb-1">選擇製程課別</label>
+                    <select id="chart-dept-select" onchange="renderCharts()" class="px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold focus:ring-2 focus:ring-blue-600">
+                    </select>
                 </div>
-                <div id="connection-status" class="hidden md:flex items-center space-x-2 text-xs bg-slate-800 px-3.5 py-1.5 rounded-full border border-slate-700 shadow-inner">
-                    <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span id="status-text" class="text-slate-200 font-bold">連線檢查中...</span>
-                </div>
-                <div id="user-info-section" class="hidden flex items-center space-x-3 bg-slate-800 px-4 py-1.5 rounded-lg border border-slate-700">
-                    <span id="user-display-name" class="text-xs font-bold text-blue-300"></span>
-                    <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-500 text-white text-xs px-2.5 py-1 rounded transition shadow font-bold">
-                        <i class="fa-solid fa-right-from-bracket mr-1"></i>登出
+                <div class="self-end flex items-center gap-2">
+                    <button onclick="saveDashboardToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2.5 rounded-lg transition shadow flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                    </button>
+                    <button onclick="exportAllChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2.5 rounded-lg transition shadow flex items-center">
+                        <i class="fa-solid fa-images mr-1.5"></i>一鍵匯出全課 PNG
                     </button>
                 </div>
             </div>
         </div>
-    </header>
 
-    <!-- 登入畫面 -->
-    <main id="auth-container" class="flex-grow flex items-center justify-center px-4 py-12 bg-slate-50">
-        <div class="bg-white border-2 border-slate-300 max-w-md w-full rounded-2xl shadow-2xl p-8">
-            <div class="text-center mb-8">
-                <div class="bg-blue-100 text-blue-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl border border-blue-300 shadow-inner">
-                    <i class="fa-solid fa-user-shield"></i>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- 中班圖表 -->
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="mid-chart-title" class="font-extrabold text-amber-800 text-base flex items-center"><i class="fa-solid fa-sun mr-2"></i>中班 (Mid-Shift) 稼動與人力分析</h3>
+                        <button onclick="exportChartPNG('midChart', '中班')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-900 px-3.5 py-1.5 rounded border-2 border-slate-400 transition flex items-center font-extrabold">
+                            <i class="fa-solid fa-download mr-1"></i>下載高清 PNG
+                        </button>
+                    </div>
+                    <div class="relative h-96 w-full bg-white p-2 rounded-xl border-2 border-slate-300 shadow-inner">
+                        <canvas id="midChart"></canvas>
+                    </div>
+                    <div class="mt-4 p-3.5 bg-amber-50 rounded-xl border-2 border-amber-300 max-h-40 overflow-y-auto">
+                        <h4 class="text-xs font-extrabold text-amber-900 mb-2 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>中班異常狀況與紀律紀錄 (僅列出異常)</h4>
+                        <div id="mid-notes-container" class="space-y-1.5 text-xs text-slate-900 font-bold">
+                        </div>
+                    </div>
                 </div>
-                <h2 class="text-2xl font-extrabold text-slate-950">系統身分驗證</h2>
-                <p class="text-xs font-bold text-slate-600 mt-1">請登入您的授權帳號以存取企業排班與稼動資料</p>
             </div>
 
-            <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+            <!-- 夜班圖表 -->
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
                 <div>
-                    <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">電子郵件 (Email)</label>
-                    <input type="email" id="login-email" required placeholder="name@company.com" class="w-full px-4 py-2.5 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="night-chart-title" class="font-extrabold text-indigo-900 text-base flex items-center"><i class="fa-solid fa-moon mr-2"></i>夜班 (Night-Shift) 稼動與人力分析</h3>
+                        <button onclick="exportChartPNG('nightChart', '夜班')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-900 px-3.5 py-1.5 rounded border-2 border-slate-400 transition flex items-center font-extrabold">
+                            <i class="fa-solid fa-download mr-1"></i>下載高清 PNG
+                        </button>
+                    </div>
+                    <div class="relative h-96 w-full bg-white p-2 rounded-xl border-2 border-slate-300 shadow-inner">
+                        <canvas id="nightChart"></canvas>
+                    </div>
+                    <div class="mt-4 p-3.5 bg-indigo-50 rounded-xl border-2 border-indigo-300 max-h-40 overflow-y-auto">
+                        <h4 class="text-xs font-extrabold text-indigo-950 mb-2 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>夜班異常狀況與紀律紀錄 (僅列出異常)</h4>
+                        <div id="night-notes-container" class="space-y-1.5 text-xs text-slate-900 font-bold">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">密碼 (Password)</label>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-2.5 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none text-sm">
-                </div>
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-extrabold py-3 rounded-lg transition shadow-lg text-sm">
-                    安全登入系統
-                </button>
-            </form>
-
-            <div class="mt-6 text-center border-t-2 border-slate-200 pt-4">
-                <p class="text-xs font-bold text-slate-700 mb-2">內部同仁尚未開通帳號？</p>
-                <button onclick="openRegisterModal()" class="text-sm font-extrabold text-blue-700 hover:underline">
-                    <i class="fa-solid fa-user-plus mr-1"></i>申請快速註冊通道
-                </button>
             </div>
-            <div id="auth-error" class="mt-4 text-center text-xs text-red-700 font-extrabold"></div>
-        </div>
-    </main>
-
-    <!-- 快速註冊彈跳視窗 -->
-    <div id="register-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white border-2 border-slate-400 max-w-md w-full rounded-2xl shadow-2xl p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-extrabold text-slate-950 flex items-center">
-                    <i class="fa-solid fa-user-plus text-blue-700 mr-2"></i>快速註冊帳號
-                </h3>
-                <button onclick="closeRegisterModal()" class="text-slate-600 hover:text-slate-950 text-base font-extrabold">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <form id="register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">英文名字 (English Name)</label>
-                    <input type="text" id="reg-english-name" required placeholder="例如: Alex Liu" class="w-full px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">電子郵件帳號 (Email)</label>
-                    <input type="email" id="reg-email" required placeholder="name@company.com" class="w-full px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-extrabold text-slate-800 uppercase mb-1">密碼 (Password)</label>
-                    <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                </div>
-                <div class="flex space-x-3 pt-2">
-                    <button type="button" onclick="closeRegisterModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900 py-2.5 rounded-lg text-sm font-extrabold">取消</button>
-                    <button type="submit" class="flex-1 bg-blue-700 hover:bg-blue-800 text-white py-2.5 rounded-lg text-sm font-extrabold shadow">完成註冊</button>
-                </div>
-            </form>
-            <div id="reg-error" class="mt-3 text-center text-xs text-red-700 font-extrabold"></div>
         </div>
     </div>
 
-    <!-- 主應用程式介面 -->
-    <div id="app-container" class="hidden flex-grow flex flex-col max-w-7xl w-full mx-auto px-6 py-6 bg-white">
-        
-        <!-- 分頁導覽列 -->
-        <div class="flex flex-wrap gap-2 mb-6 border-b-2 border-slate-300 pb-3 overflow-x-auto">
-            <button onclick="switchAppTab('dashboard')" class="tab-btn active px-4 py-2 rounded-xl text-xs bg-blue-700 text-white shadow-md transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
-                <i class="fa-solid fa-chart-line"></i><span>各課圖表分析</span>
-            </button>
-            <button onclick="switchAppTab('summary')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
-                <i class="fa-solid fa-table-cells"></i><span>總表分析與建議</span>
-            </button>
-            <button onclick="switchAppTab('quality')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
-                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i><span>品質異常未處理</span>
-            </button>
-            <button onclick="switchAppTab('machine')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
-                <i class="fa-solid fa-gears text-indigo-600"></i><span>機故統計與歷史</span>
-            </button>
-            <button onclick="switchAppTab('management')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
-                <i class="fa-solid fa-pen-to-square"></i><span>資料填寫與管理</span>
-            </button>
-            <button onclick="switchAppTab('excel')" class="tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap">
-                <i class="fa-solid fa-file-excel text-emerald-700"></i><span>Excel 匯入匯出</span>
-            </button>
-        </div>
-
-        <!-- 分頁 1: 各課圖表分析 -->
-        <div id="tab-dashboard" class="space-y-6">
-            <div class="bg-slate-50 border-2 border-slate-300 p-6 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4">
+    <!-- 分頁 2: 總表分析與趨勢建議 -->
+    <div id="tab-summary" class="hidden space-y-6">
+        <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
                 <div>
-                    <h2 class="text-xl font-extrabold text-slate-950">各課中夜班稼動與人力雙軸趨勢分析</h2>
-                    <p class="text-xs font-bold text-slate-700 mt-1">柱狀圖表示機台稼動率 (%)，折線圖表示班別人力配置。匯出 PNG 時將自動標註課別與高清粗體黑字。</p>
+                    <h2 class="text-xl font-extrabold text-slate-950">全廠各課 KPI 稼動率趨勢分析與專業建議</h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">彙整各製程課之中夜班平均稼動率表現，並針對稼動瓶頸提出精準改善建議。</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <div>
-                        <label class="block text-xs font-extrabold text-slate-800 mb-1">選擇製程課別</label>
-                        <select id="chart-dept-select" onchange="renderCharts()" class="px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold focus:ring-2 focus:ring-blue-600">
-                        </select>
+                <div class="flex items-center space-x-3 flex-wrap gap-2">
+                    <button onclick="saveSummaryToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                    </button>
+                    <button onclick="exportSummaryToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
+                    </button>
+                    <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
+                        <input type="file" id="summary-excel-input" accept=".xlsx, .xls" onchange="importSummaryExcel(event)" class="hidden">
+                    </label>
+                    <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg border-2 border-slate-300">
+                        <button onclick="setSummaryPeriod('7days')" id="btn-period-7" class="px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow">近七天分析</button>
+                        <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (10月) 總評</button>
                     </div>
-                    <div class="self-end flex items-center gap-2">
-                        <button onclick="saveDashboardToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2.5 rounded-lg transition shadow flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
-                        </button>
-                        <button onclick="exportAllChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2.5 rounded-lg transition shadow flex items-center">
-                            <i class="fa-solid fa-images mr-1.5"></i>一鍵匯出全課 PNG
-                        </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
+                            <th class="p-3.5">製程課別</th>
+                            <th class="p-3.5 text-center">中班平均稼動率</th>
+                            <th class="p-3.5 text-center">夜班平均稼動率</th>
+                            <th class="p-3.5 text-center">中班平均人力</th>
+                            <th class="p-3.5 text-center">夜班平均人力</th>
+                            <th class="p-3.5">稼動率趨勢分析與建議</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summary-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分頁 3: 品質異常未處理 -->
+    <div id="tab-quality" class="hidden space-y-6">
+        <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2"></i>品質異常未處理清單與分析
+                    </h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">自動計算「延遲天數未處理 = 日期 - 品保通知日期」，支援分析趨勢圖、逐日累積件數及各課當月逐日累積統計。</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="addQualityRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-plus mr-1.5"></i>新增品質異常列
+                    </button>
+                    <button onclick="saveQualityToFirebase()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                    </button>
+                    <button onclick="exportQualityToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
+                    </button>
+                    <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
+                        <input type="file" id="quality-excel-input" accept=".xlsx, .xls" onchange="importQualityExcel(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <!-- 新增：品質異常分析趨勢圖與統計圖表區塊 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t-2 border-slate-200">
+                <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-extrabold text-slate-950 text-sm">逐日累積件數與當月逐日累積統計圖</h3>
+                        <button onclick="exportSingleCanvasPNG('qualityDailyChart', '品質異常_逐日累積統計圖')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
                     </div>
+                    <div class="relative h-80 w-full">
+                        <canvas id="qualityDailyChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-extrabold text-slate-950 text-sm">各課逐日累積統計圖 (各課當月逐日累積)</h3>
+                        <button onclick="exportSingleCanvasPNG('qualityDeptDailyChart', '品質異常_各課逐日累積統計圖')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                    </div>
+                    <div class="relative h-80 w-full">
+                        <canvas id="qualityDeptDailyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto pt-4">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
+                            <th class="p-3.5">日期</th>
+                            <th class="p-3.5">品保通知日期</th>
+                            <th class="p-3.5">製程</th>
+                            <th class="p-3.5">製令編號</th>
+                            <th class="p-3.5">品號</th>
+                            <th class="p-3.5">異常原因</th>
+                            <th class="p-3.5">責任單位</th>
+                            <th class="p-3.5 text-center">結案狀態</th>
+                            <th class="p-3.5 text-center text-red-700">延遲天數未處理</th>
+                            <th class="p-3.5 text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quality-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分頁 4: 機故統計與歷史分析 -->
+    <div id="tab-machine" class="hidden space-y-8">
+        
+        <!-- 區塊 A: 滿版圖表分析工作表 -->
+        <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-4 border-b-2 border-slate-200 pb-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
+                        <i class="fa-solid fa-chart-bar text-indigo-600 mr-2"></i>機台故障統計與歷史分析圖表 (滿版顯示)
+                    </h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">橫條圖由上而下依累積停機天數由多到少排序，支援已結案與未結案雙向對比。</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="saveMachineToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                    </button>
+                    <button onclick="exportMachineChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-download mr-1.5"></i>匯出機故統計圖表 PNG
+                    </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 中班圖表 -->
-                <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 id="mid-chart-title" class="font-extrabold text-amber-800 text-base flex items-center"><i class="fa-solid fa-sun mr-2"></i>中班 (Mid-Shift) 稼動與人力分析</h3>
-                            <button onclick="exportChartPNG('midChart', '中班')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-900 px-3.5 py-1.5 rounded border-2 border-slate-400 transition flex items-center font-extrabold">
-                                <i class="fa-solid fa-download mr-1"></i>下載高清 PNG
-                            </button>
-                        </div>
-                        <div class="relative h-96 w-full bg-white p-2 rounded-xl border-2 border-slate-300 shadow-inner">
-                            <canvas id="midChart"></canvas>
-                        </div>
-                        <div class="mt-4 p-3.5 bg-amber-50 rounded-xl border-2 border-amber-300 max-h-40 overflow-y-auto">
-                            <h4 class="text-xs font-extrabold text-amber-900 mb-2 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>中班異常狀況與紀律紀錄 (僅列出異常)</h4>
-                            <div id="mid-notes-container" class="space-y-1.5 text-xs text-slate-900 font-bold">
-                            </div>
-                        </div>
+                <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-extrabold text-slate-950 text-sm">依「課別」統計歷史停機 (排序由多到少)</h3>
+                        <button onclick="exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                    </div>
+                    <div class="relative h-96 w-full">
+                        <canvas id="machineDeptChart"></canvas>
                     </div>
                 </div>
-
-                <!-- 夜班圖表 -->
-                <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 id="night-chart-title" class="font-extrabold text-indigo-900 text-base flex items-center"><i class="fa-solid fa-moon mr-2"></i>夜班 (Night-Shift) 稼動與人力分析</h3>
-                            <button onclick="exportChartPNG('nightChart', '夜班')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-900 px-3.5 py-1.5 rounded border-2 border-slate-400 transition flex items-center font-extrabold">
-                                <i class="fa-solid fa-download mr-1"></i>下載高清 PNG
-                            </button>
-                        </div>
-                        <div class="relative h-96 w-full bg-white p-2 rounded-xl border-2 border-slate-300 shadow-inner">
-                            <canvas id="nightChart"></canvas>
-                        </div>
-                        <div class="mt-4 p-3.5 bg-indigo-50 rounded-xl border-2 border-indigo-300 max-h-40 overflow-y-auto">
-                            <h4 class="text-xs font-extrabold text-indigo-950 mb-2 flex items-center"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>夜班異常狀況與紀律紀錄 (僅列出異常)</h4>
-                            <div id="night-notes-container" class="space-y-1.5 text-xs text-slate-900 font-bold">
-                            </div>
-                        </div>
+                <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-extrabold text-slate-950 text-sm">依「機台編號」統計歷史停機 (排序由多到少)</h3>
+                        <button onclick="exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                    </div>
+                    <div class="relative h-96 w-full">
+                        <canvas id="machineItemChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 分頁 2: 總表分析與趨勢建議 -->
-        <div id="tab-summary" class="hidden space-y-6">
-            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
-                <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-950">全廠各課 KPI 稼動率趨勢分析與專業建議</h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">彙整各製程課之中夜班平均稼動率表現，並針對稼動瓶頸提出精準改善建議。</p>
-                    </div>
-                    <div class="flex items-center space-x-3 flex-wrap gap-2">
-                        <button onclick="saveSummaryToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
-                        </button>
-                        <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg border-2 border-slate-300">
-                            <button onclick="setSummaryPeriod('7days')" id="btn-period-7" class="px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow">近七天分析</button>
-                            <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (10月) 總評</button>
-                        </div>
-                    </div>
+        <!-- 區塊 B: 機台故障歷史明細 -->
+        <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-4">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
+                        <i class="fa-solid fa-table-list text-blue-700 mr-2"></i>機台故障歷史明細
+                    </h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">支援一鍵匯出/匯入 Excel、標準日期格式 (YYYY-MM-DD)、日期選擇器與課別下拉選單。</p>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
-                                <th class="p-3.5">製程課別</th>
-                                <th class="p-3.5 text-center">中班平均稼動率</th>
-                                <th class="p-3.5 text-center">夜班平均稼動率</th>
-                                <th class="p-3.5 text-center">中班平均人力</th>
-                                <th class="p-3.5 text-center">夜班平均人力</th>
-                                <th class="p-3.5">稼動率趨勢分析與建議</th>
-                            </tr>
-                        </thead>
-                        <tbody id="summary-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 分頁 3: 品質異常未處理 -->
-        <div id="tab-quality" class="hidden space-y-6">
-            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
-                            <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2"></i>品質異常未處理清單與分析
-                        </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">自動計算「延遲天數未處理 = 日期 - 品保通知日期」，支援一鍵匯出/匯入 Excel、下拉選單與結案顏色區分。</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button onclick="addQualityRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-plus mr-1.5"></i>新增品質異常列
-                        </button>
-                        <button onclick="saveQualityToFirebase()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
-                        </button>
-                        <button onclick="exportQualityToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
-                        </button>
-                        <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
-                            <input type="file" id="quality-excel-input" accept=".xlsx, .xls" onchange="importQualityExcel(event)" class="hidden">
-                        </label>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
-                                <th class="p-3.5">日期</th>
-                                <th class="p-3.5">品保通知日期</th>
-                                <th class="p-3.5">製程</th>
-                                <th class="p-3.5">製令編號</th>
-                                <th class="p-3.5">品號</th>
-                                <th class="p-3.5">異常原因</th>
-                                <th class="p-3.5">責任單位</th>
-                                <th class="p-3.5 text-center">結案狀態</th>
-                                <th class="p-3.5 text-center text-red-700">延遲天數未處理</th>
-                                <th class="p-3.5 text-center">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="quality-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 分頁 4: 機故統計與歷史分析 -->
-        <div id="tab-machine" class="hidden space-y-8">
-            
-            <!-- 區塊 A: 滿版圖表分析工作表 -->
-            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-6">
-                <div class="flex flex-wrap justify-between items-center gap-4 border-b-2 border-slate-200 pb-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
-                            <i class="fa-solid fa-chart-bar text-indigo-600 mr-2"></i>機台故障統計與歷史分析圖表 (滿版顯示)
-                        </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">橫條圖由上而下依累積停機天數由多到少排序，支援已結案與未結案雙向對比。</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="saveMachineToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
-                        </button>
-                        <button onclick="exportMachineChartsPNG()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-download mr-1.5"></i>匯出機故統計圖表 PNG
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-extrabold text-slate-950 text-sm">依「課別」統計歷史停機 (排序由多到少)</h3>
-                            <button onclick="exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
-                        </div>
-                        <div class="relative h-96 w-full">
-                            <canvas id="machineDeptChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-extrabold text-slate-950 text-sm">依「機台編號」統計歷史停機 (排序由多到少)</h3>
-                            <button onclick="exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
-                        </div>
-                        <div class="relative h-96 w-full">
-                            <canvas id="machineItemChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 區塊 B: 機台故障歷史明細 -->
-            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
-                            <i class="fa-solid fa-table-list text-blue-700 mr-2"></i>機台故障歷史明細
-                        </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">支援一鍵匯出/匯入 Excel、日期選擇器與課別下拉選單。</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button onclick="addMachineRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-plus mr-1.5"></i>新增機故異常列
-                        </button>
-                        <button onclick="saveMachineToFirebase()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
-                        </button>
-                        <button onclick="exportMachineToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
-                            <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
-                        </button>
-                        <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
-                            <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
-                            <input type="file" id="machine-excel-input" accept=".xlsx, .xls" onchange="importMachineExcel(event)" class="hidden">
-                        </label>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
-                                <th class="p-3.5">課別</th>
-                                <th class="p-3.5">機台編號</th>
-                                <th class="p-3.5">異常開始日期</th>
-                                <th class="p-3.5">修復完成日期 (空白表未修)</th>
-                                <th class="p-3.5 text-center text-red-700">累積停機天數</th>
-                                <th class="p-3.5">異常原因分類</th>
-                                <th class="p-3.5">異常原因詳述</th>
-                                <th class="p-3.5">處理對策</th>
-                                <th class="p-3.5 text-center">結案狀態</th>
-                                <th class="p-3.5 text-center">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="machine-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- 分頁 5: 資料填寫與管理 -->
-        <div id="tab-management" class="hidden space-y-6">
-            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
-                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-950">即時資料檢視與維護</h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">線上調整各課每日中夜班人力、機台稼動與異常備註，立即即時同步至 Firebase。</p>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <select id="mgmt-dept-select" onchange="loadManagementData()" class="px-3.5 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold">
-                        </select>
-                        <select id="mgmt-date-select" onchange="loadManagementData()" class="px-3.5 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold">
-                        </select>
-                    </div>
-                </div>
-
-                <form id="mgmt-form" onsubmit="saveManagementData(event)" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-amber-50 p-5 rounded-xl border-2 border-amber-300 space-y-4">
-                            <h3 class="font-extrabold text-amber-900 text-base flex items-center"><i class="fa-solid fa-sun mr-2"></i>中班 (Mid-Shift) 數據填寫</h3>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs font-extrabold text-slate-800 mb-1">人力</label>
-                                    <input type="number" step="0.5" id="mgmt-mid-manpower" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-extrabold text-slate-800 mb-1">總機台數</label>
-                                    <input type="number" id="mgmt-mid-total" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-extrabold text-slate-800 mb-1">稼動機台</label>
-                                    <input type="number" id="mgmt-mid-active" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-800 mb-1">中班人機備註 (無異常請留空)</label>
-                                <input type="text" id="mgmt-mid-note" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-800 mb-1">中班紀律 (正常請填正常)</label>
-                                <input type="text" id="mgmt-mid-disc" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                            </div>
-                        </div>
-
-                        <div class="bg-indigo-50 p-5 rounded-xl border-2 border-indigo-300 space-y-4">
-                            <h3 class="font-extrabold text-indigo-950 text-base flex items-center"><i class="fa-solid fa-moon mr-2"></i>夜班 (Night-Shift) 數據填寫</h3>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block text-xs font-extrabold text-slate-800 mb-1">人力</label>
-                                    <input type="number" step="0.5" id="mgmt-night-manpower" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-extrabold text-slate-800 mb-1">總機台數</label>
-                                    <input type="number" id="mgmt-night-total" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-extrabold text-slate-800 mb-1">稼動機台</label>
-                                    <input type="number" id="mgmt-night-active" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-800 mb-1">夜班人機備註 (無異常請留空)</label>
-                                <input type="text" id="mgmt-night-note" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-extrabold text-slate-800 mb-1">夜班紀律 (正常請填正常)</label>
-                                <input type="text" id="mgmt-night-disc" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-6 py-3 rounded-lg transition shadow">
-                            <i class="fa-solid fa-floppy-disk mr-2"></i>儲存變更至 Firebase
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 分頁 6: Excel 一鍵匯入匯出 -->
-        <div id="tab-excel" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
-                    <div>
-                        <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-emerald-300">
-                            <i class="fa-solid fa-file-excel"></i>
-                        </div>
-                        <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵匯出 Excel 報表</h3>
-                        <p class="text-xs font-bold text-slate-700 mb-6">將目前 Firebase 上的完整多工作表 (Sheet) KPI 資料下載為標準 Excel 檔案。</p>
-                    </div>
-                    <button onclick="exportAllToExcel()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-lg transition shadow flex items-center justify-center">
-                        <i class="fa-solid fa-download mr-2"></i>下載完整 Excel 檔案
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="addMachineRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-plus mr-1.5"></i>新增機故異常列
                     </button>
+                    <button onclick="saveMachineToFirebase()" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
+                    </button>
+                    <button onclick="exportMachineToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
+                    </button>
+                    <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
+                        <input type="file" id="machine-excel-input" accept=".xlsx, .xls" onchange="importMachineExcel(event)" class="hidden">
+                    </label>
                 </div>
-
-                <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
-                    <div>
-                        <div class="w-12 h-12 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-blue-300">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                        </div>
-                        <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵上傳/匯入 Excel 工作表</h3>
-                        <p class="text-xs font-bold text-slate-700 mb-6">上傳您的 Excel 檔案，系統自動比對工作表名稱與日期，一鍵更新至資料庫。</p>
-                    </div>
-                    <div>
-                        <input type="file" id="excel-file-input" accept=".xlsx, .xls" onchange="importExcelFile(event)" class="block w-full text-xs font-bold text-slate-800 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-2 file:border-slate-400 file:text-xs file:font-extrabold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100 cursor-pointer">
-                    </div>
-                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-200 border-b-2 border-slate-400 text-slate-950 text-xs uppercase tracking-wider font-extrabold">
+                            <th class="p-3.5">課別</th>
+                            <th class="p-3.5">機台編號</th>
+                            <th class="p-3.5">異常開始日期</th>
+                            <th class="p-3.5">修復完成日期 (空白表未修)</th>
+                            <th class="p-3.5 text-center text-red-700">累積停機天數</th>
+                            <th class="p-3.5">異常原因分類</th>
+                            <th class="p-3.5">異常原因詳述</th>
+                            <th class="p-3.5">處理對策</th>
+                            <th class="p-3.5 text-center">結案狀態</th>
+                            <th class="p-3.5 text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="machine-table-body" class="divide-y-2 divide-slate-200 text-xs font-bold">
+                    </tbody>
+                </table>
             </div>
         </div>
 
     </div>
 
-    <!-- Firebase SDK 與邏輯 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, onValue, child, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <!-- 分頁 5: 資料填寫與管理 -->
+    <div id="tab-management" class="hidden space-y-6">
+        <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-950">即時資料檢視與維護</h2>
+                    <p class="text-xs font-bold text-slate-700 mt-1">線上調整各課每日中夜班人力、機台稼動與異常備註，並支援一鍵匯出與匯入標準日期格式之 Excel。</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button onclick="exportManagementExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
+                        <i class="fa-solid fa-file-excel mr-1.5"></i>一鍵匯出EXCEL
+                    </button>
+                    <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>一鍵匯入EXCEL
+                        <input type="file" id="management-excel-input" accept=".xlsx, .xls" onchange="importManagementExcel(event)" class="hidden">
+                    </label>
+                    <select id="mgmt-dept-select" onchange="loadManagementData()" class="px-3.5 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold">
+                    </select>
+                    <select id="mgmt-date-select" onchange="loadManagementData()" class="px-3.5 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold">
+                    </select>
+                </div>
+            </div>
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-            });
-        }
+            <form id="mgmt-form" onsubmit="saveManagementData(event)" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-amber-50 p-5 rounded-xl border-2 border-amber-300 space-y-4">
+                        <h3 class="font-extrabold text-amber-900 text-base flex items-center"><i class="fa-solid fa-sun mr-2"></i>中班 (Mid-Shift) 數據填寫</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-800 mb-1">人力</label>
+                                <input type="number" step="0.5" id="mgmt-mid-manpower" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-800 mb-1">總機台數</label>
+                                <input type="number" id="mgmt-mid-total" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-800 mb-1">稼動機台</label>
+                                <input type="number" id="mgmt-mid-active" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-800 mb-1">中班人機備註 (無異常請留空)</label>
+                            <input type="text" id="mgmt-mid-note" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-800 mb-1">中班紀律 (正常請填正常)</label>
+                            <input type="text" id="mgmt-mid-disc" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                        </div>
+                    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBsAXBofb79NcR_iKTdnBUtp4WczMu_hCw",
-            authDomain: "mnshiftability.firebaseapp.com",
-            projectId: "mnshiftability",
-            storageBucket: "mnshiftability.firebasestorage.app",
-            messagingSenderId: "50315763294",
-            appId: "1:50315763294:web:4ed9cfa283ce01a62a5ecf",
-            measurementId: "G-QJHR3N2WFQ"
-        };
+                    <div class="bg-indigo-50 p-5 rounded-xl border-2 border-indigo-300 space-y-4">
+                        <h3 class="font-extrabold text-indigo-950 text-base flex items-center"><i class="fa-solid fa-moon mr-2"></i>夜班 (Night-Shift) 數據填寫</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-800 mb-1">人力</label>
+                                <input type="number" step="0.5" id="mgmt-night-manpower" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-800 mb-1">總機台數</label>
+                                <input type="number" id="mgmt-night-total" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-extrabold text-slate-800 mb-1">稼動機台</label>
+                                <input type="number" id="mgmt-night-active" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-800 mb-1">夜班人機備註 (無異常請留空)</label>
+                            <input type="text" id="mgmt-night-note" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-extrabold text-slate-800 mb-1">夜班紀律 (正常請填正常)</label>
+                            <input type="text" id="mgmt-night-disc" class="w-full px-3 py-2 bg-white border-2 border-slate-400 rounded-lg text-slate-950 font-bold text-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-extrabold px-6 py-3 rounded-lg transition shadow">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i>儲存變更至 Firebase
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+    <!-- 分頁 6: Excel 一鍵匯入匯出 -->
+    <div id="tab-excel" class="hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-emerald-300">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+                    <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵匯出 Excel 報表</h3>
+                    <p class="text-xs font-bold text-slate-700 mb-6">將目前 Firebase 上的完整多工作表 (Sheet) KPI 資料下載為標準 Excel 檔案（日期格式為標準 YYYY-MM-DD）。</p>
+                </div>
+                <button onclick="exportAllToExcel()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-lg transition shadow flex items-center justify-center">
+                    <i class="fa-solid fa-download mr-2"></i>下載完整 Excel 檔案
+                </button>
+            </div>
 
-        const DEPARTMENTS = [
-            "金屬一課", "金屬二課-C1", "金屬二課-D3", "金屬三課-C1", 
-            "金屬三課-D1", "乾式製程課", "濕式製程課(RTP)", "線切割課", 
-            "車床課D3(自)", "車床課D3(手)", "石墨銑床課", "製造五部"
-        ];
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                <div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-blue-300">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵上傳/匯入 Excel 工作表</h3>
+                    <p class="text-xs font-bold text-slate-700 mb-6">上傳您的 Excel 檔案，系統自動比對工作表名稱與標準日期格式，一鍵更新至資料庫。</p>
+                </div>
+                <div>
+                    <input type="file" id="excel-file-input" accept=".xlsx, .xls" onchange="importExcelFile(event)" class="block w-full text-xs font-bold text-slate-800 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-2 file:border-slate-400 file:text-xs file:font-extrabold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100 cursor-pointer">
+                </div>
+            </div>
+        </div>
+    </div>
 
-        const RESPONSIBLE_UNITS = [
-            "金屬一課", "金屬二課", "金屬三課", "後處理", "石墨銑床課", 
-            "線切割課", "車床課", "溼式製程課", "乾式製程課", "產品開發", 
-            "製造五部", "工程確認", "品保確認", "業務確認", "其他"
-        ];
+</div>
 
-        const MACHINE_DEPTS = [
-            "金屬一課", "金屬二課", "金屬三課", "後處理", "石墨銑床課", 
-            "線切割課", "車床課", "溼式製程課", "乾式製程課", "產品開發", "製造五部"
-        ];
+<!-- Firebase SDK 與邏輯 -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, onValue, child, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const QUALITY_PROCESSES = ["OQC", "IQC", "IPQC"];
-        const QUALITY_STATUSES = ["已結案", "未結案"];
-
-        const DATES = [];
-        for (let i = 1; i <= 31; i++) {
-            let dayStr = i < 10 ? `0${i}` : `${i}`;
-            DATES.push(`2026-10-${dayStr}`);
-        }
-
-        let globalDataCache = {};
-        let midChartInstance = null;
-        let nightChartInstance = null;
-        let machineDeptChartInstance = null;
-        let machineItemChartInstance = null;
-        let currentSummaryPeriod = '7days';
-
-        let localQualityData = [
-            { date: "2026-10-10", notify: "2026-10-06", process: "IPQC", order: "ML15-260806004", item: "F0004-ASSE000", reason: "牙缺角、牙GO NG", dept: "線切割課", status: "未結案" },
-            { date: "2026-10-10", notify: "2026-10-06", process: "OQC", order: "ML10-260526169", item: "F0924-SWTE000", reason: "缺角、牙GO NG", dept: "車床課", status: "已結案" },
-            { date: "2026-10-10", notify: "2026-10-06", process: "IPQC", order: "ML10-260807070", item: "60824-STAG100", reason: "外觀異常色差", dept: "金屬一課", status: "未結案" },
-            { date: "2026-10-10", notify: "2026-10-07", process: "OQC", order: "ML10-260909143", item: "14974-VWTE000", reason: "異常痕跡", dept: "溼式製程課", status: "已結案" }
-        ];
-
-        let localMachineData = [
-            { dept: "金屬二課", item: "CM-26", start: "2026-10-01", end: "2026-10-03", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", closed: "Y" },
-            { dept: "石墨銑床課", item: "CM-18", start: "2026-10-03", end: "", category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", closed: "" },
-            { dept: "乾式製程課", item: "GM-25", start: "2026-10-05", end: "2026-10-09", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", closed: "Y" },
-            { dept: "金屬三課", item: "CM-96", start: "2026-10-08", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
-        ];
-
-        let isMobileMode = false;
-        window.toggleDeviceMode = function() {
-            isMobileMode = !isMobileMode;
-            const bodyWrapper = document.getElementById("body-wrapper");
-            const btnText = document.getElementById("device-mode-text");
-            if (isMobileMode) {
-                bodyWrapper.classList.add("mobile-frame-mode");
-                btnText.innerText = "切換網頁模式";
-            } else {
-                bodyWrapper.classList.remove("mobile-frame-mode");
-                btnText.innerText = "切換手機模式";
-            }
-        }
-
-        const connectedRef = ref(db, ".info/connected");
-        onValue(connectedRef, (snap) => {
-            const dot = document.getElementById("status-dot");
-            const text = document.getElementById("status-text");
-            if (snap.val() === true) {
-                dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                text.innerText = "Firebase 連線正常";
-            } else {
-                dot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
-                text.innerText = "離線狀態";
-            }
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
         });
+    }
 
-        onAuthStateChanged(auth, async (user) => {
-            const authContainer = document.getElementById("auth-container");
-            const appContainer = document.getElementById("app-container");
-            const userInfoSection = document.getElementById("user-info-section");
-            const userDisplayName = document.getElementById("user-display-name");
+    const firebaseConfig = {
+        apiKey: "AIzaSyBsAXBofb79NcR_iKTdnBUtp4WczMu_hCw",
+        authDomain: "mnshiftability.firebaseapp.com",
+        projectId: "mnshiftability",
+        storageBucket: "mnshiftability.firebasestorage.app",
+        messagingSenderId: "50315763294",
+        appId: "1:50315763294:web:4ed9cfa283ce01a62a5ecf",
+        measurementId: "G-QJHR3N2WFQ"
+    };
 
-            if (user) {
-                authContainer.classList.add("hidden");
-                appContainer.classList.remove("hidden");
-                userInfoSection.classList.remove("hidden");
-                
-                let displayName = user.email;
-                try {
-                    const userSnap = await get(child(ref(db), `users/${user.uid}`));
-                    if (userSnap.exists() && userSnap.val().englishName) {
-                        displayName = `${userSnap.val().englishName} (${user.email})`;
-                    }
-                } catch (e) {}
-                userDisplayName.innerText = displayName;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-                updateLastUpdateTime();
-                await initializeDefaultDataIfNeeded();
-                fetchAllData();
-            } else {
-                authContainer.classList.remove("hidden");
-                appContainer.classList.add("hidden");
-                userInfoSection.classList.add("hidden");
-            }
+    const DEPARTMENTS = [
+        "金屬一課", "金屬二課-C1", "金屬二課-D3", "金屬三課-C1", 
+        "金屬三課-D1", "乾式製程課", "濕式製程課(RTP)", "線切割課", 
+        "車床課D3(自)", "車床課D3(手)", "石墨銑床課", "製造五部"
+    ];
+
+    const RESPONSIBLE_UNITS = [
+        "金屬一課", "金屬二課", "金屬三課", "後處理", "石墨銑床課", 
+        "線切割課", "車床課", "溼式製程課", "乾式製程課", "產品開發", 
+        "製造五部", "工程確認", "品保確認", "業務確認", "其他"
+    ];
+
+    const MACHINE_DEPTS = [
+        "金屬一課", "金屬二課", "金屬三課", "後處理", "石墨銑床課", 
+        "線切割課", "車床課", "溼式製程課", "乾式製程課", "產品開發", "製造五部"
+    ];
+
+    const QUALITY_PROCESSES = ["OQC", "IQC", "IPQC"];
+    const QUALITY_STATUSES = ["已結案", "未結案"];
+
+    const DATES = [];
+    for (let i = 1; i <= 31; i++) {
+        let dayStr = i < 10 ? `0${i}` : `${i}`;
+        DATES.push(`2026-10-${dayStr}`);
+    }
+
+    let globalDataCache = {};
+    let midChartInstance = null;
+    let nightChartInstance = null;
+    let machineDeptChartInstance = null;
+    let machineItemChartInstance = null;
+    let qualityDailyChartInstance = null;
+    let qualityDeptDailyChartInstance = null;
+    let currentSummaryPeriod = '7days';
+
+    let localQualityData = [
+        { date: "2026-10-10", notify: "2026-10-06", process: "IPQC", order: "ML15-260806004", item: "F0004-ASSE000", reason: "牙缺角、牙GO NG", dept: "線切割課", status: "未結案" },
+        { date: "2026-10-10", notify: "2026-10-06", process: "OQC", order: "ML10-260526169", item: "F0924-SWTE000", reason: "缺角、牙GO NG", dept: "車床課", status: "已結案" },
+        { date: "2026-10-10", notify: "2026-10-06", process: "IPQC", order: "ML10-260807070", item: "60824-STAG100", reason: "外觀異常色差", dept: "金屬一課", status: "未結案" },
+        { date: "2026-10-10", notify: "2026-10-07", process: "OQC", order: "ML10-260909143", item: "14974-VWTE000", reason: "異常痕跡", dept: "溼式製程課", status: "已結案" }
+    ];
+
+    let localMachineData = [
+        { dept: "金屬二課", item: "CM-26", start: "2026-10-01", end: "2026-10-03", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", closed: "Y" },
+        { dept: "石墨銑床課", item: "CM-18", start: "2026-10-03", end: "", category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", closed: "" },
+        { dept: "乾式製程課", item: "GM-25", start: "2026-10-05", end: "2026-10-09", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", closed: "Y" },
+        { dept: "金屬三課", item: "CM-96", start: "2026-10-08", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
+    ];
+
+    let isMobileMode = false;
+    window.toggleDeviceMode = function() {
+        isMobileMode = !isMobileMode;
+        const bodyWrapper = document.getElementById("body-wrapper");
+        const btnText = document.getElementById("device-mode-text");
+        if (isMobileMode) {
+            bodyWrapper.classList.add("mobile-frame-mode");
+            btnText.innerText = "切換網頁模式";
+        } else {
+            bodyWrapper.classList.remove("mobile-frame-mode");
+            btnText.innerText = "切換手機模式";
+        }
+    }
+
+    const connectedRef = ref(db, ".info/connected");
+    onValue(connectedRef, (snap) => {
+        const dot = document.getElementById("status-dot");
+        const text = document.getElementById("status-text");
+        if (snap.val() === true) {
+            dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+            text.innerText = "Firebase 連線正常";
+        } else {
+            dot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
+            text.innerText = "離線狀態";
+        }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        const authContainer = document.getElementById("auth-container");
+        const appContainer = document.getElementById("app-container");
+        const userInfoSection = document.getElementById("user-info-section");
+        const userDisplayName = document.getElementById("user-display-name");
+
+        if (user) {
+            authContainer.classList.add("hidden");
+            appContainer.classList.remove("hidden");
+            userInfoSection.classList.remove("hidden");
+            
+            let displayName = user.email;
+            try {
+                const userSnap = await get(child(ref(db), `users/${user.uid}`));
+                if (userSnap.exists() && userSnap.val().englishName) {
+                    displayName = `${userSnap.val().englishName} (${user.email})`;
+                }
+            } catch (e) {}
+            userDisplayName.innerText = displayName;
+
+            updateLastUpdateTime();
+            await initializeDefaultDataIfNeeded();
+            fetchAllData();
+        } else {
+            authContainer.classList.remove("hidden");
+            appContainer.classList.add("hidden");
+            userInfoSection.classList.add("hidden");
+        }
+    });
+
+    function updateLastUpdateTime() {
+        const now = new Date();
+        const timeStr = now.getFullYear() + '-' + 
+            String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+            String(now.getDate()).padStart(2, '0') + ' ' + 
+            String(now.getHours()).padStart(2, '0') + ':' + 
+            String(now.getMinutes()).padStart(2, '0') + ':' + 
+            String(now.getSeconds()).padStart(2, '0');
+        document.getElementById("update-time-text").innerText = timeStr;
+    }
+
+    window.openRegisterModal = function() {
+        document.getElementById("register-modal").classList.remove("hidden");
+        document.getElementById("reg-error").innerText = "";
+    }
+
+    window.closeRegisterModal = function() {
+        document.getElementById("register-modal").classList.add("hidden");
+    }
+
+    window.handleLoginSubmit = async function(e) {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value;
+        const password = document.getElementById("login-password").value;
+        const errDiv = document.getElementById("auth-error");
+        errDiv.innerText = "";
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            errDiv.innerText = "登入失敗: " + error.message;
+        }
+    }
+
+    window.handleRegisterSubmit = async function(e) {
+        e.preventDefault();
+        const englishName = document.getElementById("reg-english-name").value;
+        const email = document.getElementById("reg-email").value;
+        const password = document.getElementById("reg-password").value;
+        const errDiv = document.getElementById("reg-error");
+        errDiv.innerText = "";
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await set(ref(db, `users/${user.uid}`), {
+                email: email,
+                englishName: englishName,
+                createdAt: new Date().toISOString()
+            });
+            closeRegisterModal();
+            alert("註冊成功！已自動登入系統。");
+        } catch (error) {
+            errDiv.innerText = "註冊失敗: " + error.message;
+        }
+    }
+
+    window.handleLogout = function() {
+        signOut(auth);
+    }
+
+    window.switchAppTab = function(tabName) {
+        ['dashboard', 'summary', 'quality', 'machine', 'management', 'excel'].forEach(t => {
+            document.getElementById(`tab-${t}`).classList.add("hidden");
         });
+        document.getElementById(`tab-${tabName}`).classList.remove("hidden");
 
-        function updateLastUpdateTime() {
-            const now = new Date();
-            const timeStr = now.getFullYear() + '-' + 
-                String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                String(now.getDate()).padStart(2, '0') + ' ' + 
-                String(now.getHours()).padStart(2, '0') + ':' + 
-                String(now.getMinutes()).padStart(2, '0') + ':' + 
-                String(now.getSeconds()).padStart(2, '0');
-            document.getElementById("update-time-text").innerText = timeStr;
-        }
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.className = "tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap";
+        });
+        event.currentTarget.className = "tab-btn px-4 py-2 rounded-xl text-xs bg-blue-700 text-white shadow-md transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap";
 
-        window.openRegisterModal = function() {
-            document.getElementById("register-modal").classList.remove("hidden");
-            document.getElementById("reg-error").innerText = "";
-        }
+        if (tabName === 'dashboard') renderCharts();
+        if (tabName === 'summary') renderSummaryTable();
+        if (tabName === 'quality') renderQualityTable();
+        if (tabName === 'machine') renderMachineAnalytics();
+    }
 
-        window.closeRegisterModal = function() {
-            document.getElementById("register-modal").classList.add("hidden");
-        }
-
-        window.handleLoginSubmit = async function(e) {
-            e.preventDefault();
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
-            const errDiv = document.getElementById("auth-error");
-            errDiv.innerText = "";
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                errDiv.innerText = "登入失敗: " + error.message;
-            }
-        }
-
-        window.handleRegisterSubmit = async function(e) {
-            e.preventDefault();
-            const englishName = document.getElementById("reg-english-name").value;
-            const email = document.getElementById("reg-email").value;
-            const password = document.getElementById("reg-password").value;
-            const errDiv = document.getElementById("reg-error");
-            errDiv.innerText = "";
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                await set(ref(db, `users/${user.uid}`), {
-                    email: email,
-                    englishName: englishName,
-                    createdAt: new Date().toISOString()
-                });
-                closeRegisterModal();
-                alert("註冊成功！已自動登入系統。");
-            } catch (error) {
-                errDiv.innerText = "註冊失敗: " + error.message;
-            }
-        }
-
-        window.handleLogout = function() {
-            signOut(auth);
-        }
-
-        window.switchAppTab = function(tabName) {
-            ['dashboard', 'summary', 'quality', 'machine', 'management', 'excel'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add("hidden");
-            });
-            document.getElementById(`tab-${tabName}`).classList.remove("hidden");
-
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.className = "tab-btn px-4 py-2 rounded-xl text-xs bg-slate-200 text-slate-900 hover:bg-slate-300 transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap";
-            });
-            event.currentTarget.className = "tab-btn px-4 py-2 rounded-xl text-xs bg-blue-700 text-white shadow-md transition flex items-center space-x-1.5 font-extrabold whitespace-nowrap";
-
-            if (tabName === 'dashboard') renderCharts();
-            if (tabName === 'summary') renderSummaryTable();
-            if (tabName === 'quality') renderQualityTable();
-            if (tabName === 'machine') renderMachineAnalytics();
-        }
-
-        async function initializeDefaultDataIfNeeded() {
-            const snap = await get(child(ref(db), 'departments'));
-            if (!snap.exists()) {
-                let initialData = {};
-                DEPARTMENTS.forEach(dept => {
-                    initialData[dept] = {};
-                    DATES.forEach(date => {
-                        initialData[dept][date] = {
-                            midManpower: 3, midTotalMachines: 20, midActiveMachines: 15,
-                            nightManpower: 2, nightTotalMachines: 20, nightActiveMachines: 12,
-                            midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
-                        };
-                    });
-                });
-                await set(ref(db, 'departments'), initialData);
-            }
-
-            const qualSnap = await get(child(ref(db), 'qualityIssues'));
-            if (!qualSnap.exists()) {
-                await set(ref(db, 'qualityIssues'), localQualityData);
-            }
-
-            const machSnap = await get(child(ref(db), 'machineHistory'));
-            if (!machSnap.exists()) {
-                await set(ref(db, 'machineHistory'), localMachineData);
-            }
-        }
-
-        function fetchAllData() {
-            onValue(ref(db, 'departments'), (snapshot) => {
-                if (snapshot.exists()) {
-                    globalDataCache = snapshot.val();
-                    populateDropdowns();
-                    renderCharts();
-                    renderSummaryTable();
-                    loadManagementData();
-                    updateLastUpdateTime();
-                }
-            });
-
-            onValue(ref(db, 'qualityIssues'), (snapshot) => {
-                if (snapshot.exists()) {
-                    localQualityData = snapshot.val() || [];
-                    renderQualityTable();
-                }
-            });
-
-            onValue(ref(db, 'machineHistory'), (snapshot) => {
-                if (snapshot.exists()) {
-                    localMachineData = snapshot.val() || [];
-                    renderMachineAnalytics();
-                }
-            });
-        }
-
-        function populateDropdowns() {
-            const chartSelect = document.getElementById("chart-dept-select");
-            const mgmtDeptSelect = document.getElementById("mgmt-dept-select");
-            const mgmtDateSelect = document.getElementById("mgmt-date-select");
-
-            const currentChartDept = chartSelect.value;
-            const currentMgmtDept = mgmtDeptSelect.value;
-            const currentMgmtDate = mgmtDateSelect.value;
-
-            chartSelect.innerHTML = "";
-            mgmtDeptSelect.innerHTML = "";
-            mgmtDateSelect.innerHTML = "";
-
+    async function initializeDefaultDataIfNeeded() {
+        const snap = await get(child(ref(db), 'departments'));
+        if (!snap.exists()) {
+            let initialData = {};
             DEPARTMENTS.forEach(dept => {
-                chartSelect.add(new Option(dept, dept));
-                mgmtDeptSelect.add(new Option(dept, dept));
+                initialData[dept] = {};
+                DATES.forEach(date => {
+                    initialData[dept][date] = {
+                        midManpower: 3, midTotalMachines: 20, midActiveMachines: 15,
+                        nightManpower: 2, nightTotalMachines: 20, nightActiveMachines: 12,
+                        midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
+                    };
+                });
             });
-
-            DATES.forEach(d => {
-                mgmtDateSelect.add(new Option(d, d));
-            });
-
-            if (currentChartDept) chartSelect.value = currentChartDept;
-            if (currentMgmtDept) mgmtDeptSelect.value = currentMgmtDept;
-            if (currentMgmtDate) mgmtDateSelect.value = currentMgmtDate;
+            await set(ref(db, 'departments'), initialData);
         }
 
-        function isNormalText(txt) {
-            if (!txt) return true;
-            const str = String(txt).trim();
-            return str === '' || str === '無' || str === '正常' || str === '無異常';
+        const qualSnap = await get(child(ref(db), 'qualityIssues'));
+        if (!qualSnap.exists()) {
+            await set(ref(db, 'qualityIssues'), localQualityData);
         }
 
-        // ==========================================
-        // 各分頁「儲存至雲端 firebase」按鈕專屬功能
-        // ==========================================
-        window.saveDashboardToFirebase = async function() {
-            const dept = document.getElementById("chart-dept-select").value;
-            if (!dept) return;
-            try {
-                await set(ref(db, `departments/${dept}`), globalDataCache[dept]);
-                alert(`「各課圖表分析」(${dept}) 資料已成功儲存至 Firebase！`);
-            } catch (err) {
-                alert("儲存失敗: " + err.message);
-            }
+        const machSnap = await get(child(ref(db), 'machineHistory'));
+        if (!machSnap.exists()) {
+            await set(ref(db, 'machineHistory'), localMachineData);
         }
+    }
 
-        window.saveSummaryToFirebase = async function() {
-            try {
-                await set(ref(db, 'departments'), globalDataCache);
-                alert("「總表分析與建議」全廠資料已成功儲存至 Firebase！");
-            } catch (err) {
-                alert("儲存失敗: " + err.message);
-            }
-        }
-
-        window.saveQualityToFirebase = async function() {
-            try {
-                await set(ref(db, 'qualityIssues'), localQualityData);
-                alert("「品質異常未處理」清單已成功儲存至 Firebase！");
-            } catch (err) {
-                alert("儲存失敗: " + err.message);
-            }
-        }
-
-        window.saveMachineToFirebase = async function() {
-            try {
-                await set(ref(db, 'machineHistory'), localMachineData);
-                alert("「機故統計與歷史」資料已成功儲存至 Firebase！");
-            } catch (err) {
-                alert("儲存失敗: " + err.message);
-            }
-        }
-
-        window.renderCharts = function() {
-            const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
-            const deptData = globalDataCache[dept] || {};
-
-            document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班稼動與人力分析`;
-            document.getElementById("night-chart-title").innerHTML = `<i class="fa-solid fa-moon mr-2"></i>[${dept}] 夜班稼動與人力分析`;
-
-            const labels = DATES;
-            const midManpowerArr = [], midUtilArr = [], midLabelsArr = [];
-            const nightManpowerArr = [], nightUtilArr = [], nightLabelsArr = [];
-
-            const midNotesContainer = document.getElementById("mid-notes-container");
-            const nightNotesContainer = document.getElementById("night-notes-container");
-            midNotesContainer.innerHTML = "";
-            nightNotesContainer.innerHTML = "";
-
-            let midHasException = false;
-            let nightHasException = false;
-
-            DATES.forEach(date => {
-                const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'正常', nightDiscipline:'正常' };
-                
-                midManpowerArr.push(dayObj.midManpower);
-                let midUtil = dayObj.midTotalMachines > 0 ? ((dayObj.midActiveMachines / dayObj.midTotalMachines) * 100).toFixed(1) : 0;
-                midUtilArr.push(midUtil);
-                midLabelsArr.push(`備註:${dayObj.midNote || '無'} | 紀律:${dayObj.midDiscipline || '正常'}`);
-
-                nightManpowerArr.push(dayObj.nightManpower);
-                let nightUtil = dayObj.nightTotalMachines > 0 ? ((dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100).toFixed(1) : 0;
-                nightUtilArr.push(nightUtil);
-                nightLabelsArr.push(`備註:${dayObj.nightNote || '無'} | 紀律:${dayObj.nightDiscipline || '正常'}`);
-
-                let midHasIssue = !isNormalText(dayObj.midNote) || !isNormalText(dayObj.midDiscipline);
-                if (midHasIssue) {
-                    midHasException = true;
-                    const div = document.createElement("div");
-                    div.className = "bg-amber-100 p-2.5 rounded-lg border border-amber-300 font-extrabold text-slate-950";
-                    div.innerHTML = `<span class="text-amber-900">${date}:</span> 備註: <span class="text-slate-950">${dayObj.midNote || '無'}</span> | 紀律: <span class="text-red-700">${dayObj.midDiscipline || '正常'}</span>`;
-                    midNotesContainer.appendChild(div);
-                }
-
-                let nightHasIssue = !isNormalText(dayObj.nightNote) || !isNormalText(dayObj.nightDiscipline);
-                if (nightHasIssue) {
-                    nightHasException = true;
-                    const div = document.createElement("div");
-                    div.className = "bg-indigo-100 p-2.5 rounded-lg border border-indigo-300 font-extrabold text-slate-950";
-                    div.innerHTML = `<span class="text-indigo-950">${date}:</span> 備註: <span class="text-slate-950">${dayObj.nightNote || '無'}</span> | 紀律: <span class="text-red-700">${dayObj.nightDiscipline || '正常'}</span>`;
-                    nightNotesContainer.appendChild(div);
-                }
-            });
-
-            if (!midHasException) {
-                midNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期中班運作正常</div>`;
-            }
-            if (!nightHasException) {
-                nightNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期夜班運作正常</div>`;
-            }
-
-            const ctxMid = document.getElementById('midChart').getContext('2d');
-            if (midChartInstance) midChartInstance.destroy();
-            midChartInstance = new Chart(ctxMid, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { type: 'bar', label: `中班稼動率 (%)`, data: midUtilArr, backgroundColor: 'rgba(217, 119, 6, 0.85)', borderColor: 'rgb(180, 83, 9)', borderWidth: 1.5, yAxisID: 'y1', order: 2 },
-                        { type: 'line', label: `中班人力`, data: midManpowerArr, borderColor: 'rgb(29, 78, 216)', backgroundColor: 'rgb(29, 78, 216)', borderWidth: 3, tension: 0.1, yAxisID: 'y', order: 1 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { labels: { color: '#0f172a', font: { size: 12, weight: 'bold' } } },
-                        tooltip: { callbacks: { footer: (items) => midLabelsArr[items[0].dataIndex] } } 
-                    },
-                    scales: {
-                        y: { type: 'linear', position: 'left', title: { display: true, text: '人力 (人)', color: '#0f172a' }, ticks: { color: '#0f172a' }, grid: { color: '#cbd5e1' }, min: 0 },
-                        y1: { type: 'linear', position: 'right', title: { display: true, text: '稼動率 (%)', color: '#0f172a' }, ticks: { color: '#0f172a' }, min: 0, max: 100, grid: { drawOnChartArea: false } },
-                        x: { ticks: { color: '#0f172a', font: { size: 10 } }, grid: { color: '#cbd5e1' } }
-                    }
-                }
-            });
-
-            const ctxNight = document.getElementById('nightChart').getContext('2d');
-            if (nightChartInstance) nightChartInstance.destroy();
-            nightChartInstance = new Chart(ctxNight, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { type: 'bar', label: `夜班稼動率 (%)`, data: nightUtilArr, backgroundColor: 'rgba(79, 70, 229, 0.85)', borderColor: 'rgb(67, 56, 202)', borderWidth: 1.5, yAxisID: 'y1', order: 2 },
-                        { type: 'line', label: `夜班人力`, data: nightManpowerArr, borderColor: 'rgb(219, 39, 119)', backgroundColor: 'rgb(219, 39, 119)', borderWidth: 3, tension: 0.1, yAxisID: 'y', order: 1 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { labels: { color: '#0f172a', font: { size: 12, weight: 'bold' } } },
-                        tooltip: { callbacks: { footer: (items) => nightLabelsArr[items[0].dataIndex] } } 
-                    },
-                    scales: {
-                        y: { type: 'linear', position: 'left', title: { display: true, text: '人力 (人)', color: '#0f172a' }, ticks: { color: '#0f172a' }, grid: { color: '#cbd5e1' }, min: 0 },
-                        y1: { type: 'linear', position: 'right', title: { display: true, text: '稼動率 (%)', color: '#0f172a' }, ticks: { color: '#0f172a' }, min: 0, max: 100, grid: { drawOnChartArea: false } },
-                        x: { ticks: { color: '#0f172a', font: { size: 10 } }, grid: { color: '#cbd5e1' } }
-                    }
-                }
-            });
-        }
-
-        // ==========================================
-        // 品質異常未處理
-        // ==========================================
-        window.renderQualityTable = function() {
-            const tbody = document.getElementById("quality-table-body");
-            tbody.innerHTML = "";
-
-            localQualityData.forEach((row, index) => {
-                let notifyDateObj = new Date(row.notify || "2026-10-06");
-                let currentDateObj = new Date(row.date || "2026-10-10");
-                let diffTime = currentDateObj - notifyDateObj;
-                let delayDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-
-                let statusColorClass = row.status === "已結案" ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-amber-100 text-amber-800 border-amber-300";
-
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
-                tr.innerHTML = `
-                    <td class="p-3"><input type="date" value="${row.date || ''}" onchange="updateQualityData(${index}, 'date', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3"><input type="date" value="${row.notify || ''}" onchange="updateQualityData(${index}, 'notify', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3">
-                        <select onchange="updateQualityData(${index}, 'process', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white">
-                            ${QUALITY_PROCESSES.map(p => `<option value="${p}" ${row.process === p ? 'selected' : ''}>${p}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td class="p-3"><input type="text" value="${row.order || ''}" onchange="updateQualityData(${index}, 'order', this.value)" class="w-28 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
-                    <td class="p-3"><input type="text" value="${row.item || ''}" onchange="updateQualityData(${index}, 'item', this.value)" class="w-28 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
-                    <td class="p-3"><input type="text" value="${row.reason || ''}" onchange="updateQualityData(${index}, 'reason', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3">
-                        <select onchange="updateQualityData(${index}, 'dept', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white">
-                            ${RESPONSIBLE_UNITS.map(u => `<option value="${u}" ${row.dept === u ? 'selected' : ''}>${u}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td class="p-3 text-center">
-                        <select onchange="updateQualityData(${index}, 'status', this.value)" class="px-2 py-1 rounded text-xs font-extrabold border ${statusColorClass}">
-                            ${QUALITY_STATUSES.map(s => `<option value="${s}" ${row.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td class="p-3 text-center font-extrabold text-red-700 text-sm">${delayDays} 天</td>
-                    <td class="p-3 text-center"><button onclick="deleteQualityRow(${index})" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.addQualityRow = function() {
-            localQualityData.push({ date: "2026-10-10", notify: "2026-10-08", process: "IPQC", order: "ML10-261001001", item: "NEW-01", reason: "新登錄異常", dept: "金屬一課", status: "未結案" });
-            renderQualityTable();
-        }
-
-        window.deleteQualityRow = function(index) {
-            localQualityData.splice(index, 1);
-            renderQualityTable();
-        }
-
-        window.updateQualityData = function(index, field, val) {
-            localQualityData[index][field] = val;
-            renderQualityTable();
-        }
-
-        window.exportQualityToExcel = function() {
-            const wb = XLSX.utils.book_new();
-            let rows = [
-                ["日期", "品保通知日期", "製程", "製令編號", "品號", "異常原因", "責任單位", "結案狀態"]
-            ];
-            localQualityData.forEach(q => {
-                rows.push([q.date, q.notify, q.process, q.order, q.item, q.reason, q.dept, q.status]);
-            });
-            const ws = XLSX.utils.aoa_to_sheet(rows);
-            XLSX.utils.book_append_sheet(wb, ws, "品質異常未處理");
-            XLSX.writeFile(wb, `品質異常未處理報表_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-
-        window.importQualityExcel = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-                    
-                    if (json.length > 1) {
-                        localQualityData = [];
-                        for (let r = 1; r < json.length; r++) {
-                            let row = json[r];
-                            if (!row[0] && !row[3]) continue;
-                            localQualityData.push({
-                                date: row[0] ? String(row[0]).slice(0,10) : "2026-10-10",
-                                notify: row[1] ? String(row[1]).slice(0,10) : "2026-10-06",
-                                process: row[2] || "OQC",
-                                order: row[3] || "",
-                                item: row[4] || "",
-                                reason: row[5] || "",
-                                dept: row[6] || "金屬一課",
-                                status: row[7] || "未結案"
-                            });
-                        }
-                        renderQualityTable();
-                        alert("品質異常未處理資料已成功匯入！");
-                    }
-                } catch(err) {
-                    alert("匯入失敗: " + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // ==========================================
-        // 機故統計與歷史分析
-        // ==========================================
-        window.renderMachineAnalytics = function() {
-            const tbody = document.getElementById("machine-table-body");
-            tbody.innerHTML = "";
-
-            const now = new Date();
-            let deptClosedMap = {};
-            let deptUnclosedMap = {};
-            let itemClosedMap = {};
-            let itemUnclosedMap = {};
-            let allDepts = new Set(MACHINE_DEPTS);
-            let allItems = new Set();
-
-            localMachineData.forEach(m => {
-                if (m.dept) allDepts.add(m.dept);
-                if (m.item) allItems.add(m.item);
-                if (m.closed === 'Y') {
-                    if (!deptClosedMap[m.dept]) deptClosedMap[m.dept] = 0;
-                    if (!itemClosedMap[m.item]) itemClosedMap[m.item] = 0;
-                } else {
-                    if (!deptUnclosedMap[m.dept]) deptUnclosedMap[m.dept] = 0;
-                    if (!itemUnclosedMap[m.item]) itemUnclosedMap[m.item] = 0;
-                }
-            });
-
-            localMachineData.forEach((m, index) => {
-                let diffDays = 0;
-                if (m.start) {
-                    let startDate = new Date(m.start);
-                    let endDate = (m.end && m.end.trim() !== '') ? new Date(m.end) : now;
-                    let diffTime = Math.abs(endDate - startDate);
-                    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                }
-
-                m.calculatedDays = diffDays;
-
-                if (m.closed === 'Y') {
-                    deptClosedMap[m.dept] = (deptClosedMap[m.dept] || 0) + diffDays;
-                    itemClosedMap[m.item] = (itemClosedMap[m.item] || 0) + diffDays;
-                } else {
-                    deptUnclosedMap[m.dept] = (deptUnclosedMap[m.dept] || 0) + diffDays;
-                    itemUnclosedMap[m.item] = (itemUnclosedMap[m.item] || 0) + diffDays;
-                }
-
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
-                tr.innerHTML = `
-                    <td class="p-3">
-                        <select onchange="updateMachineData(${index}, 'dept', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white">
-                            ${MACHINE_DEPTS.map(d => `<option value="${d}" ${m.dept === d ? 'selected' : ''}>${d}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td class="p-3"><input type="text" value="${m.item || ''}" onchange="updateMachineData(${index}, 'item', this.value)" class="w-20 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
-                    <td class="p-3"><input type="date" value="${m.start || ''}" onchange="updateMachineData(${index}, 'start', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3"><input type="date" value="${m.end || ''}" onchange="updateMachineData(${index}, 'end', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3 text-center font-extrabold text-red-700 text-sm">${diffDays} 天</td>
-                    <td class="p-3"><input type="text" value="${m.category || ''}" onchange="updateMachineData(${index}, 'category', this.value)" class="w-24 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3"><input type="text" value="${m.desc || ''}" onchange="updateMachineData(${index}, 'desc', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3"><input type="text" value="${m.solution || ''}" onchange="updateMachineData(${index}, 'solution', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
-                    <td class="p-3 text-center">
-                        <select onchange="updateMachineData(${index}, 'closed', this.value)" class="px-2 py-1 rounded text-xs font-extrabold border ${m.closed === 'Y' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}">
-                            <option value="Y" ${m.closed === 'Y' ? 'selected' : ''}>已結案</option>
-                            <option value="" ${m.closed !== 'Y' ? 'selected' : ''}>未結案</option>
-                        </select>
-                    </td>
-                    <td class="p-3 text-center"><button onclick="deleteMachineRow(${index})" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            let deptList = Array.from(allDepts).map(d => {
-                let closed = deptClosedMap[d] || 0;
-                let unclosed = deptUnclosedMap[d] || 0;
-                return { dept: d, closed, unclosed, total: closed + unclosed };
-            });
-            deptList.sort((a, b) => b.total - a.total);
-
-            const ctxDept = document.getElementById('machineDeptChart').getContext('2d');
-            if (machineDeptChartInstance) machineDeptChartInstance.destroy();
-            machineDeptChartInstance = new Chart(ctxDept, {
-                type: 'bar',
-                data: {
-                    labels: deptList.map(item => item.dept),
-                    datasets: [
-                        { label: '已結案停機天數', data: deptList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案/處理中停機天數', data: deptList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
-                    ]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
-                    scales: {
-                        x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
-                        y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
-                    }
-                }
-            });
-
-            let itemList = Array.from(allItems).map(i => {
-                let closed = itemClosedMap[i] || 0;
-                let unclosed = itemUnclosedMap[i] || 0;
-                return { item: i, closed, unclosed, total: closed + unclosed };
-            });
-            itemList.sort((a, b) => b.total - a.total);
-
-            const ctxItem = document.getElementById('machineItemChart').getContext('2d');
-            if (machineItemChartInstance) machineItemChartInstance.destroy();
-            machineItemChartInstance = new Chart(ctxItem, {
-                type: 'bar',
-                data: {
-                    labels: itemList.map(item => item.item),
-                    datasets: [
-                        { label: '已結案停機天數', data: itemList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案/處理中停機天數', data: itemList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
-                    ]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
-                    scales: {
-                        x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
-                        y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
-                    }
-                }
-            });
-        }
-
-        window.addMachineRow = function() {
-            localMachineData.push({ dept: "金屬一課", item: "CM-99", start: "2026-10-09", end: "", category: "機械零件", desc: "新登錄故障", solution: "待處理", closed: "" });
-            renderMachineAnalytics();
-        }
-
-        window.deleteMachineRow = function(index) {
-            localMachineData.splice(index, 1);
-            renderMachineAnalytics();
-        }
-
-        window.updateMachineData = function(index, field, val) {
-            localMachineData[index][field] = val;
-            renderMachineAnalytics();
-        }
-
-        window.exportMachineToExcel = function() {
-            const wb = XLSX.utils.book_new();
-            let rows = [
-                ["課別", "機台編號", "異常開始日期", "修復完成日期", "異常原因分類", "異常原因詳述", "處理對策", "結案狀態"]
-            ];
-            localMachineData.forEach(m => {
-                rows.push([m.dept, m.item, m.start, m.end, m.category, m.desc, m.solution, m.closed === 'Y' ? '已結案' : '未結案']);
-            });
-            const ws = XLSX.utils.aoa_to_sheet(rows);
-            XLSX.utils.book_append_sheet(wb, ws, "機故統計與歷史");
-            XLSX.writeFile(wb, `機故統計與歷史報表_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-
-        window.importMachineExcel = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-                    
-                    if (json.length > 1) {
-                        localMachineData = [];
-                        for (let r = 1; r < json.length; r++) {
-                            let row = json[r];
-                            if (!row[0] && !row[1]) continue;
-                            let closedVal = String(row[7] || "").includes('已結案') ? 'Y' : '';
-                            localMachineData.push({
-                                dept: row[0] || "金屬一課",
-                                item: row[1] || "",
-                                start: row[2] ? String(row[2]).slice(0,10) : "2026-10-01",
-                                end: row[3] ? String(row[3]).slice(0,10) : "",
-                                category: row[4] || "",
-                                desc: row[5] || "",
-                                solution: row[6] || "",
-                                closed: closedVal
-                            });
-                        }
-                        renderMachineAnalytics();
-                        alert("機故統計與歷史資料已成功匯入！");
-                    }
-                } catch(err) {
-                    alert("匯入失敗: " + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        window.exportSingleCanvasPNG = function(canvasId, titleName) {
-            const canvas = document.getElementById(canvasId);
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height + 60;
-            const ctx = tempCanvas.getContext('2d');
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.fillText(`工廠統計報表：${titleName}`, 20, 35);
-            ctx.drawImage(canvas, 0, 60);
-
-            const a = document.createElement('a');
-            a.href = tempCanvas.toDataURL('image/png', 1.0);
-            a.download = `${titleName}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        window.exportMachineChartsPNG = function() {
-            exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析');
-            setTimeout(() => exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析'), 300);
-            alert("機故橫條統計圖表已全數匯出高清 PNG！");
-        }
-
-        window.exportChartPNG = function(canvasId, shiftName) {
-            const canvas = document.getElementById(canvasId);
-            const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height + 60;
-            const ctx = tempCanvas.getContext('2d');
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.fillText(`[${dept}] ${shiftName} 稼動與人力分析趨勢圖`, 20, 35);
-            ctx.drawImage(canvas, 0, 60);
-
-            const a = document.createElement('a');
-            a.href = tempCanvas.toDataURL('image/png', 1.0);
-            a.download = `${dept}_${shiftName}_稼動分析.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        window.exportAllChartsPNG = async function() {
-            const select = document.getElementById("chart-dept-select");
-            for (let i = 0; i < select.options.length; i++) {
-                select.selectedIndex = i;
+    function fetchAllData() {
+        onValue(ref(db, 'departments'), (snapshot) => {
+            if (snapshot.exists()) {
+                globalDataCache = snapshot.val();
+                populateDropdowns();
                 renderCharts();
-                await new Promise(resolve => setTimeout(resolve, 300));
-                exportChartPNG('midChart', '中班');
-                await new Promise(resolve => setTimeout(resolve, 200));
-                exportChartPNG('nightChart', '夜班');
+                renderSummaryTable();
+                loadManagementData();
+                updateLastUpdateTime();
             }
-            alert("所有課別中夜班高畫質 PNG 已全數匯出！");
+        });
+
+        onValue(ref(db, 'qualityIssues'), (snapshot) => {
+            if (snapshot.exists()) {
+                localQualityData = snapshot.val() || [];
+                renderQualityTable();
+            }
+        });
+
+        onValue(ref(db, 'machineHistory'), (snapshot) => {
+            if (snapshot.exists()) {
+                localMachineData = snapshot.val() || [];
+                renderMachineAnalytics();
+            }
+        });
+    }
+
+    function populateDropdowns() {
+        const chartSelect = document.getElementById("chart-dept-select");
+        const mgmtDeptSelect = document.getElementById("mgmt-dept-select");
+        const mgmtDateSelect = document.getElementById("mgmt-date-select");
+
+        const currentChartDept = chartSelect.value;
+        const currentMgmtDept = mgmtDeptSelect.value;
+        const currentMgmtDate = mgmtDateSelect.value;
+
+        chartSelect.innerHTML = "";
+        mgmtDeptSelect.innerHTML = "";
+        mgmtDateSelect.innerHTML = "";
+
+        DEPARTMENTS.forEach(dept => {
+            chartSelect.add(new Option(dept, dept));
+            mgmtDeptSelect.add(new Option(dept, dept));
+        });
+
+        DATES.forEach(d => {
+            mgmtDateSelect.add(new Option(d, d));
+        });
+
+        if (currentChartDept) chartSelect.value = currentChartDept;
+        if (currentMgmtDept) mgmtDeptSelect.value = currentMgmtDept;
+        if (currentMgmtDate) mgmtDateSelect.value = currentMgmtDate;
+    }
+
+    function isNormalText(txt) {
+        if (!txt) return true;
+        const str = String(txt).trim();
+        return str === '' || str === '無' || str === '正常' || str === '無異常';
+    }
+
+    // ==========================================
+    // 各分頁「儲存至雲端 firebase」按鈕專屬功能
+    // ==========================================
+    window.saveDashboardToFirebase = async function() {
+        const dept = document.getElementById("chart-dept-select").value;
+        if (!dept) return;
+        try {
+            await set(ref(db, `departments/${dept}`), globalDataCache[dept]);
+            alert(`「各課圖表分析」(${dept}) 資料已成功儲存至 Firebase！`);
+        } catch (err) {
+            alert("儲存失敗: " + err.message);
+        }
+    }
+
+    window.saveSummaryToFirebase = async function() {
+        try {
+            await set(ref(db, 'departments'), globalDataCache);
+            alert("「總表分析與建議」全廠資料已成功儲存至 Firebase！");
+        } catch (err) {
+            alert("儲存失敗: " + err.message);
+        }
+    }
+
+    window.saveQualityToFirebase = async function() {
+        try {
+            await set(ref(db, 'qualityIssues'), localQualityData);
+            alert("「品質異常未處理」清單已成功儲存至 Firebase！");
+        } catch (err) {
+            alert("儲存失敗: " + err.message);
+        }
+    }
+
+    window.saveMachineToFirebase = async function() {
+        try {
+            await set(ref(db, 'machineHistory'), localMachineData);
+            alert("「機故統計與歷史」資料已成功儲存至 Firebase！");
+        } catch (err) {
+            alert("儲存失敗: " + err.message);
+        }
+    }
+
+    window.renderCharts = function() {
+        const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
+        const deptData = globalDataCache[dept] || {};
+
+        document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班稼動與人力分析`;
+        document.getElementById("night-chart-title").innerHTML = `<i class="fa-solid fa-moon mr-2"></i>[${dept}] 夜班稼動與人力分析`;
+
+        const labels = DATES;
+        const midManpowerArr = [], midUtilArr = [], midLabelsArr = [];
+        const nightManpowerArr = [], nightUtilArr = [], nightLabelsArr = [];
+
+        const midNotesContainer = document.getElementById("mid-notes-container");
+        const nightNotesContainer = document.getElementById("night-notes-container");
+        midNotesContainer.innerHTML = "";
+        nightNotesContainer.innerHTML = "";
+
+        let midHasException = false;
+        let nightHasException = false;
+
+        DATES.forEach(date => {
+            const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'正常', nightDiscipline:'正常' };
+            
+            midManpowerArr.push(dayObj.midManpower);
+            let midUtil = dayObj.midTotalMachines > 0 ? ((dayObj.midActiveMachines / dayObj.midTotalMachines) * 100).toFixed(1) : 0;
+            midUtilArr.push(midUtil);
+            midLabelsArr.push(`備註:${dayObj.midNote || '無'} | 紀律:${dayObj.midDiscipline || '正常'}`);
+
+            nightManpowerArr.push(dayObj.nightManpower);
+            let nightUtil = dayObj.nightTotalMachines > 0 ? ((dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100).toFixed(1) : 0;
+            nightUtilArr.push(nightUtil);
+            nightLabelsArr.push(`備註:${dayObj.nightNote || '無'} | 紀律:${dayObj.nightDiscipline || '正常'}`);
+
+            let midHasIssue = !isNormalText(dayObj.midNote) || !isNormalText(dayObj.midDiscipline);
+            if (midHasIssue) {
+                midHasException = true;
+                const div = document.createElement("div");
+                div.className = "bg-amber-100 p-2.5 rounded-lg border border-amber-300 font-extrabold text-slate-950";
+                div.innerHTML = `<span class="text-amber-900">${date}:</span> 備註: <span class="text-slate-950">${dayObj.midNote || '無'}</span> | 紀律: <span class="text-red-700">${dayObj.midDiscipline || '正常'}</span>`;
+                midNotesContainer.appendChild(div);
+            }
+
+            let nightHasIssue = !isNormalText(dayObj.nightNote) || !isNormalText(dayObj.nightDiscipline);
+            if (nightHasIssue) {
+                nightHasException = true;
+                const div = document.createElement("div");
+                div.className = "bg-indigo-100 p-2.5 rounded-lg border border-indigo-300 font-extrabold text-slate-950";
+                div.innerHTML = `<span class="text-indigo-950">${date}:</span> 備註: <span class="text-slate-950">${dayObj.nightNote || '無'}</span> | 紀律: <span class="text-red-700">${dayObj.nightDiscipline || '正常'}</span>`;
+                nightNotesContainer.appendChild(div);
+            }
+        });
+
+        if (!midHasException) {
+            midNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期中班運作正常</div>`;
+        }
+        if (!nightHasException) {
+            nightNotesContainer.innerHTML = `<div class="text-emerald-800 font-extrabold py-1"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>近期夜班運作正常</div>`;
         }
 
-        window.setSummaryPeriod = function(period) {
-            currentSummaryPeriod = period;
-            document.getElementById('btn-period-7').className = period === '7days' ? 'px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow' : 'px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800';
-            document.getElementById('btn-period-month').className = period === 'month' ? 'px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow' : 'px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800';
-            renderSummaryTable();
+        const ctxMid = document.getElementById('midChart').getContext('2d');
+        if (midChartInstance) midChartInstance.destroy();
+        midChartInstance = new Chart(ctxMid, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { type: 'bar', label: `中班稼動率 (%)`, data: midUtilArr, backgroundColor: 'rgba(217, 119, 6, 0.85)', borderColor: 'rgb(180, 83, 9)', borderWidth: 1.5, yAxisID: 'y1', order: 2 },
+                    { type: 'line', label: `中班人力`, data: midManpowerArr, borderColor: 'rgb(29, 78, 216)', backgroundColor: 'rgb(29, 78, 216)', borderWidth: 3, tension: 0.1, yAxisID: 'y', order: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { labels: { color: '#0f172a', font: { size: 12, weight: 'bold' } } },
+                    tooltip: { callbacks: { footer: (items) => midLabelsArr[items[0].dataIndex] } } 
+                },
+                scales: {
+                    y: { type: 'linear', position: 'left', title: { display: true, text: '人力 (人)', color: '#0f172a' }, ticks: { color: '#0f172a' }, grid: { color: '#cbd5e1' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: '稼動率 (%)', color: '#0f172a' }, ticks: { color: '#0f172a' }, min: 0, max: 100, grid: { drawOnChartArea: false } },
+                    x: { ticks: { color: '#0f172a', font: { size: 10 } }, grid: { color: '#cbd5e1' } }
+                }
+            }
+        });
+
+        const ctxNight = document.getElementById('nightChart').getContext('2d');
+        if (nightChartInstance) nightChartInstance.destroy();
+        nightChartInstance = new Chart(ctxNight, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { type: 'bar', label: `夜班稼動率 (%)`, data: nightUtilArr, backgroundColor: 'rgba(79, 70, 229, 0.85)', borderColor: 'rgb(67, 56, 202)', borderWidth: 1.5, yAxisID: 'y1', order: 2 },
+                    { type: 'line', label: `夜班人力`, data: nightManpowerArr, borderColor: 'rgb(219, 39, 119)', backgroundColor: 'rgb(219, 39, 119)', borderWidth: 3, tension: 0.1, yAxisID: 'y', order: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { labels: { color: '#0f172a', font: { size: 12, weight: 'bold' } } },
+                    tooltip: { callbacks: { footer: (items) => nightLabelsArr[items[0].dataIndex] } } 
+                },
+                scales: {
+                    y: { type: 'linear', position: 'left', title: { display: true, text: '人力 (人)', color: '#0f172a' }, ticks: { color: '#0f172a' }, grid: { color: '#cbd5e1' }, min: 0 },
+                    y1: { type: 'linear', position: 'right', title: { display: true, text: '稼動率 (%)', color: '#0f172a' }, ticks: { color: '#0f172a' }, min: 0, max: 100, grid: { drawOnChartArea: false } },
+                    x: { ticks: { color: '#0f172a', font: { size: 10 } }, grid: { color: '#cbd5e1' } }
+                }
+            }
+        });
+    }
+
+    // ==========================================
+    // 品質異常未處理與趨勢圖表
+    // ==========================================
+    window.renderQualityTable = function() {
+        const tbody = document.getElementById("quality-table-body");
+        tbody.innerHTML = "";
+
+        localQualityData.forEach((row, index) => {
+            let notifyDateObj = new Date(row.notify || "2026-10-06");
+            let currentDateObj = new Date(row.date || "2026-10-10");
+            let diffTime = currentDateObj - notifyDateObj;
+            let delayDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+            let statusColorClass = row.status === "已結案" ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-amber-100 text-amber-800 border-amber-300";
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
+            tr.innerHTML = `
+                <td class="p-3"><input type="date" value="${row.date || ''}" onchange="updateQualityData(${index}, 'date', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3"><input type="date" value="${row.notify || ''}" onchange="updateQualityData(${index}, 'notify', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3">
+                    <select onchange="updateQualityData(${index}, 'process', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white">
+                        ${QUALITY_PROCESSES.map(p => `<option value="${p}" ${row.process === p ? 'selected' : ''}>${p}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="p-3"><input type="text" value="${row.order || ''}" onchange="updateQualityData(${index}, 'order', this.value)" class="w-28 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
+                <td class="p-3"><input type="text" value="${row.item || ''}" onchange="updateQualityData(${index}, 'item', this.value)" class="w-28 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
+                <td class="p-3"><input type="text" value="${row.reason || ''}" onchange="updateQualityData(${index}, 'reason', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3">
+                    <select onchange="updateQualityData(${index}, 'dept', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white">
+                        ${RESPONSIBLE_UNITS.map(u => `<option value="${u}" ${row.dept === u ? 'selected' : ''}>${u}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="p-3 text-center">
+                    <select onchange="updateQualityData(${index}, 'status', this.value)" class="px-2 py-1 rounded text-xs font-extrabold border ${statusColorClass}">
+                        ${QUALITY_STATUSES.map(s => `<option value="${s}" ${row.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="p-3 text-center font-extrabold text-red-700 text-sm">${delayDays} 天</td>
+                <td class="p-3 text-center"><button onclick="deleteQualityRow(${index})" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        renderQualityCharts();
+    }
+
+    function renderQualityCharts() {
+        // 1. 逐日累積件數與當月逐日累積統計圖
+        let dailyCounts = {};
+        DATES.forEach(d => dailyCounts[d] = 0);
+        localQualityData.forEach(q => {
+            let dStr = q.date || "2026-10-10";
+            if (dailyCounts[dStr] !== undefined) {
+                dailyCounts[dStr]++;
+            }
+        });
+
+        let cumulativeCounts = [];
+        let runningTotal = 0;
+        DATES.forEach(d => {
+            runningTotal += dailyCounts[d];
+            cumulativeCounts.push(runningTotal);
+        });
+
+        const ctxDaily = document.getElementById('qualityDailyChart').getContext('2d');
+        if (qualityDailyChartInstance) qualityDailyChartInstance.destroy();
+        qualityDailyChartInstance = new Chart(ctxDaily, {
+            type: 'line',
+            data: {
+                labels: DATES,
+                datasets: [
+                    { label: '當月逐日累積件數', data: cumulativeCounts, borderColor: 'rgb(217, 119, 6)', backgroundColor: 'rgba(217, 119, 6, 0.2)', borderWidth: 3, fill: true, tension: 0.2 },
+                    { type: 'bar', label: '當日新增件數', data: DATES.map(d => dailyCounts[d]), backgroundColor: 'rgba(59, 130, 246, 0.7)' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                scales: {
+                    x: { ticks: { color: '#0f172a', font: { size: 9 } }, grid: { color: '#cbd5e1' } },
+                    y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 }
+                }
+            }
+        });
+
+        // 2. 各課各課當月逐日累積統計圖 (各責任單位橫條累計或分組堆疊)
+        let deptCumulativeMap = {};
+        RESPONSIBLE_UNITS.forEach(u => deptCumulativeMap[u] = 0);
+        localQualityData.forEach(q => {
+            let unit = q.dept || "其他";
+            if (deptCumulativeMap[unit] !== undefined) {
+                deptCumulativeMap[unit]++;
+            } else {
+                deptCumulativeMap[unit] = 1;
+            }
+        });
+
+        let deptLabels = Object.keys(deptCumulativeMap);
+        let deptValues = Object.values(deptCumulativeMap);
+
+        const ctxDeptDaily = document.getElementById('qualityDeptDailyChart').getContext('2d');
+        if (qualityDeptDailyChartInstance) qualityDeptDailyChartInstance.destroy();
+        qualityDeptDailyChartInstance = new Chart(ctxDeptDaily, {
+            type: 'bar',
+            data: {
+                labels: deptLabels,
+                datasets: [
+                    { label: '各課當月累積品質異常件數', data: deptValues, backgroundColor: 'rgba(16, 185, 129, 0.85)', borderColor: 'rgb(5, 150, 105)', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                scales: {
+                    x: { ticks: { color: '#0f172a', font: { weight: 'bold', size: 10 } }, grid: { color: '#cbd5e1' } },
+                    y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 }
+                }
+            }
+        });
+    }
+
+    window.addQualityRow = function() {
+        localQualityData.push({ date: "2026-10-10", notify: "2026-10-08", process: "IPQC", order: "ML10-261001001", item: "NEW-01", reason: "新登錄異常", dept: "金屬一課", status: "未結案" });
+        renderQualityTable();
+    }
+
+    window.deleteQualityRow = function(index) {
+        localQualityData.splice(index, 1);
+        renderQualityTable();
+    }
+
+    window.updateQualityData = function(index, field, val) {
+        localQualityData[index][field] = val;
+        renderQualityTable();
+    }
+
+    window.exportQualityToExcel = function() {
+        const wb = XLSX.utils.book_new();
+        let rows = [
+            ["日期", "品保通知日期", "製程", "製令編號", "品號", "異常原因", "責任單位", "結案狀態"]
+        ];
+        localQualityData.forEach(q => {
+            rows.push([q.date, q.notify, q.process, q.order, q.item, q.reason, q.dept, q.status]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        // 確保日期欄位為標準文字/日期格式 (設定 cell z 或文字格式)
+        XLSX.utils.book_append_sheet(wb, ws, "品質異常未處理");
+        XLSX.writeFile(wb, `品質異常未處理報表_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function cleanDateValue(val) {
+        if (!val) return "2026-10-10";
+        if (typeof val === 'number') {
+            const utc_days = Math.floor(val - 25569);
+            const dateObj = new Date(utc_days * 86400 * 1000);
+            return `${dateObj.getUTCFullYear()}-${String(dateObj.getUTCMonth() + 1).padStart(2, '0')}-${String(dateObj.getUTCDate()).padStart(2, '0')}`;
         }
+        let str = String(val).trim().replace(/\//g, '-');
+        if (str.length >= 10) return str.slice(0, 10);
+        return "2026-10-10";
+    }
 
-        window.renderSummaryTable = function() {
-            const tbody = document.getElementById("summary-table-body");
-            tbody.innerHTML = "";
-            let targetDates = currentSummaryPeriod === '7days' ? DATES.slice(-7) : DATES;
-
-            DEPARTMENTS.forEach(dept => {
-                const deptData = globalDataCache[dept] || {};
-                let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
-                let count = targetDates.length;
-
-                targetDates.forEach(date => {
-                    const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
-                    totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
-                    totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
-                    totalMidMp += Number(dayObj.midManpower);
-                    totalNightMp += Number(dayObj.nightManpower);
-                });
-
-                let avgMidU = count > 0 ? totalMidUtil / count : 0;
-                let avgNightU = count > 0 ? totalNightUtil / count : 0;
-                let avgMidMp = count > 0 ? totalMidMp / count : 0;
-                let avgNightMp = count > 0 ? totalNightMp / count : 0;
-
-                let trendAnalysis = avgMidU < 60 && avgNightU < 60 ? "【低稼動警示】中夜班稼動率均偏低 (<60%)" : "【穩定運行】稼動率維持正常區間";
-                let badgeColor = avgMidU < 60 && avgNightU < 60 ? "bg-red-100 text-red-950 border-red-400" : "bg-emerald-100 text-emerald-950 border-emerald-400";
-
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
-                tr.innerHTML = `
-                    <td class="p-3 font-extrabold text-slate-950">${dept}</td>
-                    <td class="p-3 text-center font-extrabold text-amber-800">${avgMidU.toFixed(1)}%</td>
-                    <td class="p-3 text-center font-extrabold text-indigo-900">${avgNightU.toFixed(1)}%</td>
-                    <td class="p-3 text-center text-slate-900">${avgMidMp.toFixed(1)} 人</td>
-                    <td class="p-3 text-center text-slate-900">${avgNightMp.toFixed(1)} 人</td>
-                    <td class="p-3"><span class="inline-block px-3 py-1 rounded-lg border-2 text-xs font-extrabold ${badgeColor}">${trendAnalysis}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.loadManagementData = function() {
-            const dept = document.getElementById("mgmt-dept-select").value;
-            const date = document.getElementById("mgmt-date-select").value;
-            if (!dept || !date) return;
-            const dayObj = globalDataCache[dept]?.[date] || { midManpower: 0, midTotalMachines: 0, midActiveMachines: 0, nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0, midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常' };
-
-            document.getElementById("mgmt-mid-manpower").value = dayObj.midManpower;
-            document.getElementById("mgmt-mid-total").value = dayObj.midTotalMachines;
-            document.getElementById("mgmt-mid-active").value = dayObj.midActiveMachines;
-            document.getElementById("mgmt-mid-note").value = dayObj.midNote;
-            document.getElementById("mgmt-mid-disc").value = dayObj.midDiscipline;
-            document.getElementById("mgmt-night-manpower").value = dayObj.nightManpower;
-            document.getElementById("mgmt-night-total").value = dayObj.nightTotalMachines;
-            document.getElementById("mgmt-night-active").value = dayObj.nightActiveMachines;
-            document.getElementById("mgmt-night-note").value = dayObj.nightNote;
-            document.getElementById("mgmt-night-disc").value = dayObj.nightDiscipline;
-        }
-
-        window.saveManagementData = async function(e) {
-            e.preventDefault();
-            const dept = document.getElementById("mgmt-dept-select").value;
-            const date = document.getElementById("mgmt-date-select").value;
-            const updatedDay = {
-                midManpower: Number(document.getElementById("mgmt-mid-manpower").value),
-                midTotalMachines: Number(document.getElementById("mgmt-mid-total").value),
-                midActiveMachines: Number(document.getElementById("mgmt-mid-active").value),
-                midNote: document.getElementById("mgmt-mid-note").value,
-                midDiscipline: document.getElementById("mgmt-mid-disc").value,
-                nightManpower: Number(document.getElementById("mgmt-night-manpower").value),
-                nightTotalMachines: Number(document.getElementById("mgmt-night-total").value),
-                nightActiveMachines: Number(document.getElementById("mgmt-night-active").value),
-                nightNote: document.getElementById("mgmt-night-note").value,
-                nightDiscipline: document.getElementById("mgmt-night-disc").value
-            };
+    window.importQualityExcel = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
             try {
-                await update(ref(db, `departments/${dept}/${date}`), updatedDay);
-                alert("資料已成功儲存至 Firebase！");
-            } catch (err) {
-                alert("儲存失敗: " + err.message);
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                
+                if (json.length > 1) {
+                    localQualityData = [];
+                    for (let r = 1; r < json.length; r++) {
+                        let row = json[r];
+                        if (!row[0] && !row[3]) continue;
+                        localQualityData.push({
+                            date: cleanDateValue(row[0]),
+                            notify: cleanDateValue(row[1]),
+                            process: row[2] || "OQC",
+                            order: row[3] || "",
+                            item: row[4] || "",
+                            reason: row[5] || "",
+                            dept: row[6] || "金屬一課",
+                            status: row[7] || "未結案"
+                        });
+                    }
+                    renderQualityTable();
+                    alert("品質異常未處理資料已成功匯入（使用標準日期格式）！");
+                }
+            } catch(err) {
+                alert("匯入失敗: " + err.message);
             }
-        }
+        };
+        reader.readAsArrayBuffer(file);
+    }
 
-        window.exportAllToExcel = function() {
-            const wb = XLSX.utils.book_new();
-            DEPARTMENTS.forEach(dept => {
-                const deptData = globalDataCache[dept] || {};
-                let rows = [
-                    ["類別-日期", ...DATES],
-                    ["中班人力", ...DATES.map(d => deptData[d]?.midManpower || 0)],
-                    ["中班-總機台數", ...DATES.map(d => deptData[d]?.midTotalMachines || 0)],
-                    ["中班-稼動機台", ...DATES.map(d => deptData[d]?.midActiveMachines || 0)],
-                    ["夜班人力", ...DATES.map(d => deptData[d]?.nightManpower || 0)],
-                    ["夜班-總機台數", ...DATES.map(d => deptData[d]?.nightTotalMachines || 0)],
-                    ["夜班-稼動機台", ...DATES.map(d => deptData[d]?.nightActiveMachines || 0)],
-                    ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || "")],
-                    ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || "")],
-                    ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || "正常")],
-                    ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || "正常")]
-                ];
-                const ws = XLSX.utils.aoa_to_sheet(rows);
-                XLSX.utils.book_append_sheet(wb, ws, dept);
+    // ==========================================
+    // 機故統計與歷史分析
+    // ==========================================
+    window.renderMachineAnalytics = function() {
+        const tbody = document.getElementById("machine-table-body");
+        tbody.innerHTML = "";
+
+        const now = new Date();
+        let deptClosedMap = {};
+        let deptUnclosedMap = {};
+        let itemClosedMap = {};
+        let itemUnclosedMap = {};
+        let allDepts = new Set(MACHINE_DEPTS);
+        let allItems = new Set();
+
+        localMachineData.forEach(m => {
+            if (m.dept) allDepts.add(m.dept);
+            if (m.item) allItems.add(m.item);
+            if (m.closed === 'Y') {
+                if (!deptClosedMap[m.dept]) deptClosedMap[m.dept] = 0;
+                if (!itemClosedMap[m.item]) itemClosedMap[m.item] = 0;
+            } else {
+                if (!deptUnclosedMap[m.dept]) deptUnclosedMap[m.dept] = 0;
+                if (!itemUnclosedMap[m.item]) itemUnclosedMap[m.item] = 0;
+            }
+        });
+
+        localMachineData.forEach((m, index) => {
+            let diffDays = 0;
+            if (m.start) {
+                let startDate = new Date(m.start);
+                let endDate = (m.end && m.end.trim() !== '') ? new Date(m.end) : now;
+                let diffTime = Math.abs(endDate - startDate);
+                diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+
+            m.calculatedDays = diffDays;
+
+            if (m.closed === 'Y') {
+                deptClosedMap[m.dept] = (deptClosedMap[m.dept] || 0) + diffDays;
+                itemClosedMap[m.item] = (itemClosedMap[m.item] || 0) + diffDays;
+            } else {
+                deptUnclosedMap[m.dept] = (deptUnclosedMap[m.dept] || 0) + diffDays;
+                itemUnclosedMap[m.item] = (itemUnclosedMap[m.item] || 0) + diffDays;
+            }
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
+            tr.innerHTML = `
+                <td class="p-3">
+                    <select onchange="updateMachineData(${index}, 'dept', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white">
+                        ${MACHINE_DEPTS.map(d => `<option value="${d}" ${m.dept === d ? 'selected' : ''}>${d}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="p-3"><input type="text" value="${m.item || ''}" onchange="updateMachineData(${index}, 'item', this.value)" class="w-20 px-1 py-1 border border-slate-300 rounded text-xs font-bold font-mono bg-white"></td>
+                <td class="p-3"><input type="date" value="${m.start || ''}" onchange="updateMachineData(${index}, 'start', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3"><input type="date" value="${m.end || ''}" onchange="updateMachineData(${index}, 'end', this.value)" class="px-2 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3 text-center font-extrabold text-red-700 text-sm">${diffDays} 天</td>
+                <td class="p-3"><input type="text" value="${m.category || ''}" onchange="updateMachineData(${index}, 'category', this.value)" class="w-24 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3"><input type="text" value="${m.desc || ''}" onchange="updateMachineData(${index}, 'desc', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3"><input type="text" value="${m.solution || ''}" onchange="updateMachineData(${index}, 'solution', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
+                <td class="p-3 text-center">
+                    <select onchange="updateMachineData(${index}, 'closed', this.value)" class="px-2 py-1 rounded text-xs font-extrabold border ${m.closed === 'Y' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}">
+                        <option value="Y" ${m.closed === 'Y' ? 'selected' : ''}>已結案</option>
+                        <option value="" ${m.closed !== 'Y' ? 'selected' : ''}>未結案</option>
+                    </select>
+                </td>
+                <td class="p-3 text-center"><button onclick="deleteMachineRow(${index})" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        let deptList = Array.from(allDepts).map(d => {
+            let closed = deptClosedMap[d] || 0;
+            let unclosed = deptUnclosedMap[d] || 0;
+            return { dept: d, closed, unclosed, total: closed + unclosed };
+        });
+        deptList.sort((a, b) => b.total - a.total);
+
+        const ctxDept = document.getElementById('machineDeptChart').getContext('2d');
+        if (machineDeptChartInstance) machineDeptChartInstance.destroy();
+        machineDeptChartInstance = new Chart(ctxDept, {
+            type: 'bar',
+            data: {
+                labels: deptList.map(item => item.dept),
+                datasets: [
+                    { label: '已結案停機天數', data: deptList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                    { label: '未結案/處理中停機天數', data: deptList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                scales: {
+                    x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                    y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                }
+            }
+        });
+
+        let itemList = Array.from(allItems).map(i => {
+            let closed = itemClosedMap[i] || 0;
+            let unclosed = itemUnclosedMap[i] || 0;
+            return { item: i, closed, unclosed, total: closed + unclosed };
+        });
+        itemList.sort((a, b) => b.total - a.total);
+
+        const ctxItem = document.getElementById('machineItemChart').getContext('2d');
+        if (machineItemChartInstance) machineItemChartInstance.destroy();
+        machineItemChartInstance = new Chart(ctxItem, {
+            type: 'bar',
+            data: {
+                labels: itemList.map(item => item.item),
+                datasets: [
+                    { label: '已結案停機天數', data: itemList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                    { label: '未結案/處理中停機天數', data: itemList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                scales: {
+                    x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                    y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                }
+            }
+        });
+    }
+
+    window.addMachineRow = function() {
+        localMachineData.push({ dept: "金屬一課", item: "CM-99", start: "2026-10-09", end: "", category: "機械零件", desc: "新登錄故障", solution: "待處理", closed: "" });
+        renderMachineAnalytics();
+    }
+
+    window.deleteMachineRow = function(index) {
+        localMachineData.splice(index, 1);
+        renderMachineAnalytics();
+    }
+
+    window.updateMachineData = function(index, field, val) {
+        localMachineData[index][field] = val;
+        renderMachineAnalytics();
+    }
+
+    window.exportMachineToExcel = function() {
+        const wb = XLSX.utils.book_new();
+        let rows = [
+            ["課別", "機台編號", "異常開始日期", "修復完成日期", "異常原因分類", "異常原因詳述", "處理對策", "結案狀態"]
+        ];
+        localMachineData.forEach(m => {
+            rows.push([m.dept, m.item, m.start || "", m.end || "", m.category, m.desc, m.solution, m.closed === 'Y' ? '已結案' : '未結案']);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, "機故統計與歷史");
+        XLSX.writeFile(wb, `機故統計與歷史報表_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    window.importMachineExcel = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                
+                if (json.length > 1) {
+                    localMachineData = [];
+                    for (let r = 1; r < json.length; r++) {
+                        let row = json[r];
+                        if (!row[0] && !row[1]) continue;
+                        let closedVal = String(row[7] || "").includes('已結案') ? 'Y' : '';
+                        localMachineData.push({
+                            dept: row[0] || "金屬一課",
+                            item: row[1] || "",
+                            start: cleanDateValue(row[2]),
+                            end: row[3] ? cleanDateValue(row[3]) : "",
+                            category: row[4] || "",
+                            desc: row[5] || "",
+                            solution: row[6] || "",
+                            closed: closedVal
+                        });
+                    }
+                    renderMachineAnalytics();
+                    alert("機故統計與歷史資料已成功匯入（使用標準日期格式）！");
+                }
+            } catch(err) {
+                alert("匯入失敗: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    window.exportSingleCanvasPNG = function(canvasId, titleName) {
+        const canvas = document.getElementById(canvasId);
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height + 60;
+        const ctx = tempCanvas.getContext('2d');
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText(`工廠統計報表：${titleName}`, 20, 35);
+        ctx.drawImage(canvas, 0, 60);
+
+        const a = document.createElement('a');
+        a.href = tempCanvas.toDataURL('image/png', 1.0);
+        a.download = `${titleName}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    window.exportMachineChartsPNG = function() {
+        exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析');
+        setTimeout(() => exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析'), 300);
+        alert("機故橫條統計圖表已全數匯出高清 PNG！");
+    }
+
+    window.exportChartPNG = function(canvasId, shiftName) {
+        const canvas = document.getElementById(canvasId);
+        const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height + 60;
+        const ctx = tempCanvas.getContext('2d');
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText(`[${dept}] ${shiftName} 稼動與人力分析趨勢圖`, 20, 35);
+        ctx.drawImage(canvas, 0, 60);
+
+        const a = document.createElement('a');
+        a.href = tempCanvas.toDataURL('image/png', 1.0);
+        a.download = `${dept}_${shiftName}_稼動分析.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    window.exportAllChartsPNG = async function() {
+        const select = document.getElementById("chart-dept-select");
+        for (let i = 0; i < select.options.length; i++) {
+            select.selectedIndex = i;
+            renderCharts();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            exportChartPNG('midChart', '中班');
+            await new Promise(resolve => setTimeout(resolve, 200));
+            exportChartPNG('nightChart', '夜班');
+        }
+        alert("所有課別中夜班高畫質 PNG 已全數匯出！");
+    }
+
+    window.setSummaryPeriod = function(period) {
+        currentSummaryPeriod = period;
+        document.getElementById('btn-period-7').className = period === '7days' ? 'px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow' : 'px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800';
+        document.getElementById('btn-period-month').className = period === 'month' ? 'px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow' : 'px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800';
+        renderSummaryTable();
+    }
+
+    window.renderSummaryTable = function() {
+        const tbody = document.getElementById("summary-table-body");
+        tbody.innerHTML = "";
+        let targetDates = currentSummaryPeriod === '7days' ? DATES.slice(-7) : DATES;
+
+        DEPARTMENTS.forEach(dept => {
+            const deptData = globalDataCache[dept] || {};
+            let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
+            let count = targetDates.length;
+
+            targetDates.forEach(date => {
+                const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
+                totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
+                totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
+                totalMidMp += Number(dayObj.midManpower);
+                totalNightMp += Number(dayObj.nightManpower);
             });
-            XLSX.writeFile(wb, `工廠中夜班KPI總表_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
 
-        function parseExcelDate(val) {
-            if (!val) return "";
-            if (typeof val === 'number') {
-                const utc_days = Math.floor(val - 25569);
-                const dateObj = new Date(utc_days * 86400 * 1000);
-                return `${dateObj.getUTCFullYear()}-${String(dateObj.getUTCMonth() + 1).padStart(2, '0')}-${String(dateObj.getUTCDate()).padStart(2, '0')}`;
+            let avgMidU = count > 0 ? totalMidUtil / count : 0;
+            let avgNightU = count > 0 ? totalNightUtil / count : 0;
+            let avgMidMp = count > 0 ? totalMidMp / count : 0;
+            let avgNightMp = count > 0 ? totalNightMp / count : 0;
+
+            let trendAnalysis = avgMidU < 60 && avgNightU < 60 ? "【低稼動警示】中夜班稼動率均偏低 (<60%)" : "【穩定運行】稼動率維持正常區間";
+            let badgeColor = avgMidU < 60 && avgNightU < 60 ? "bg-red-100 text-red-950 border-red-400" : "bg-emerald-100 text-emerald-950 border-emerald-400";
+
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
+            tr.innerHTML = `
+                <td class="p-3 font-extrabold text-slate-950">${dept}</td>
+                <td class="p-3 text-center font-extrabold text-amber-800">${avgMidU.toFixed(1)}%</td>
+                <td class="p-3 text-center font-extrabold text-indigo-900">${avgNightU.toFixed(1)}%</td>
+                <td class="p-3 text-center text-slate-900">${avgMidMp.toFixed(1)} 人</td>
+                <td class="p-3 text-center text-slate-900">${avgNightMp.toFixed(1)} 人</td>
+                <td class="p-3"><span class="inline-block px-3 py-1 rounded-lg border-2 text-xs font-extrabold ${badgeColor}">${trendAnalysis}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 總表新增匯出及匯入excel功能
+    window.exportSummaryToExcel = function() {
+        const wb = XLSX.utils.book_new();
+        let rows = [
+            ["製程課別", "中班平均稼動率(%)", "夜班平均稼動率(%)", "中班平均人力", "夜班平均人力", "稼動率趨勢分析與建議"]
+        ];
+        let targetDates = currentSummaryPeriod === '7days' ? DATES.slice(-7) : DATES;
+        DEPARTMENTS.forEach(dept => {
+            const deptData = globalDataCache[dept] || {};
+            let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
+            let count = targetDates.length;
+            targetDates.forEach(date => {
+                const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
+                totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
+                totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
+                totalMidMp += Number(dayObj.midManpower);
+                totalNightMp += Number(dayObj.nightManpower);
+            });
+            let avgMidU = count > 0 ? totalMidUtil / count : 0;
+            let avgNightU = count > 0 ? totalNightUtil / count : 0;
+            let avgMidMp = count > 0 ? totalMidMp / count : 0;
+            let avgNightMp = count > 0 ? totalNightMp / count : 0;
+            let trendAnalysis = avgMidU < 60 && avgNightU < 60 ? "【低稼動警示】中夜班稼動率均偏低 (<60%)" : "【穩定運行】稼動率維持正常區間";
+            rows.push([dept, avgMidU.toFixed(1), avgNightU.toFixed(1), avgMidMp.toFixed(1), avgNightMp.toFixed(1), trendAnalysis]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, "全廠各課KPI稼動摘要");
+        XLSX.writeFile(wb, `全廠各課KPI稼動率趨勢分析_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    window.importSummaryExcel = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                if (json.length > 1) {
+                    alert("成功讀取總表 Excel 檔案！摘要數據已確認比對。");
+                }
+            } catch(err) {
+                alert("匯入失敗: " + err.message);
             }
-            return String(val).trim().slice(0, 10).replace(/\//g, '-');
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    window.loadManagementData = function() {
+        const dept = document.getElementById("mgmt-dept-select").value;
+        const date = document.getElementById("mgmt-date-select").value;
+        if (!dept || !date) return;
+        const dayObj = globalDataCache[dept]?.[date] || { midManpower: 0, midTotalMachines: 0, midActiveMachines: 0, nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0, midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常' };
+
+        document.getElementById("mgmt-mid-manpower").value = dayObj.midManpower;
+        document.getElementById("mgmt-mid-total").value = dayObj.midTotalMachines;
+        document.getElementById("mgmt-mid-active").value = dayObj.mgmtMidActive || dayObj.midActiveMachines;
+        document.getElementById("mgmt-mid-note").value = dayObj.midNote;
+        document.getElementById("mgmt-mid-disc").value = dayObj.midDiscipline;
+        document.getElementById("mgmt-night-manpower").value = dayObj.nightManpower;
+        document.getElementById("mgmt-night-total").value = dayObj.nightTotalMachines;
+        document.getElementById("mgmt-night-active").value = dayObj.nightActiveMachines;
+        document.getElementById("mgmt-night-note").value = dayObj.nightNote;
+        document.getElementById("mgmt-night-disc").value = dayObj.nightDiscipline;
+    }
+
+    window.saveManagementData = async function(e) {
+        e.preventDefault();
+        const dept = document.getElementById("mgmt-dept-select").value;
+        const date = document.getElementById("mgmt-date-select").value;
+        const updatedDay = {
+            midManpower: Number(document.getElementById("mgmt-mid-manpower").value),
+            midTotalMachines: Number(document.getElementById("mgmt-mid-total").value),
+            midActiveMachines: Number(document.getElementById("mgmt-mid-active").value),
+            midNote: document.getElementById("mgmt-mid-note").value,
+            midDiscipline: document.getElementById("mgmt-mid-disc").value,
+            nightManpower: Number(document.getElementById("mgmt-night-manpower").value),
+            nightTotalMachines: Number(document.getElementById("mgmt-night-total").value),
+            nightActiveMachines: Number(document.getElementById("mgmt-night-active").value),
+            nightNote: document.getElementById("mgmt-night-note").value,
+            nightDiscipline: document.getElementById("mgmt-night-disc").value
+        };
+        try {
+            await update(ref(db, `departments/${dept}/${date}`), updatedDay);
+            alert("資料已成功儲存至 Firebase！");
+        } catch (err) {
+            alert("儲存失敗: " + err.message);
         }
+    }
 
-        window.importExcelFile = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    let updates = {};
-                    let matchedSheetsCount = 0;
+    // 即時資料檢視與維護新增一鍵匯出匯入EXCEL功能 (標準日期格式)
+    window.exportManagementExcel = function() {
+        exportAllToExcel();
+    }
 
-                    workbook.SheetNames.forEach(sheetName => {
-                        let matchedDept = DEPARTMENTS.find(d => sheetName.includes(d) || d.includes(sheetName));
-                        if (matchedDept) {
-                            matchedSheetsCount++;
-                            const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-                            if (json.length >= 1) {
-                                let headerRow = json[0];
-                                let dateIndexMap = {};
-                                for (let c = 1; c < headerRow.length; c++) {
-                                    let parsedDate = parseExcelDate(headerRow[c]);
-                                    if (DATES.includes(parsedDate)) dateIndexMap[c] = parsedDate;
-                                }
+    window.importManagementExcel = function(e) {
+        importExcelFile(e);
+    }
 
-                                for (let r = 1; r < json.length; r++) {
-                                    let rowCategory = String(json[r][0] || "").trim();
-                                    if (!rowCategory) continue;
+    window.exportAllToExcel = function() {
+        const wb = XLSX.utils.book_new();
+        DEPARTMENTS.forEach(dept => {
+            const deptData = globalDataCache[dept] || {};
+            let rows = [
+                ["類別-日期", ...DATES],
+                ["中班人力", ...DATES.map(d => deptData[d]?.midManpower || 0)],
+                ["中班-總機台數", ...DATES.map(d => deptData[d]?.midTotalMachines || 0)],
+                ["中班-稼動機台", ...DATES.map(d => deptData[d]?.midActiveMachines || 0)],
+                ["夜班人力", ...DATES.map(d => deptData[d]?.nightManpower || 0)],
+                ["夜班-總機台數", ...DATES.map(d => deptData[d]?.nightTotalMachines || 0)],
+                ["夜班-稼動機台", ...DATES.map(d => deptData[d]?.nightActiveMachines || 0)],
+                ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || "")],
+                ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || "")],
+                ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || "正常")],
+                ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || "正常")]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, dept);
+        });
+        XLSX.writeFile(wb, `工廠中夜班KPI總表_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
 
-                                    for (let c in dateIndexMap) {
-                                        let dateStr = dateIndexMap[c];
-                                        let val = json[r][c];
+    window.importExcelFile = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                let updates = {};
+                let matchedSheetsCount = 0;
 
-                                        if (!updates[`departments/${matchedDept}/${dateStr}`]) {
-                                            updates[`departments/${matchedDept}/${dateStr}`] = globalDataCache[matchedDept]?.[dateStr] || {
-                                                midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
-                                                nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
-                                                midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
-                                            };
-                                        }
-                                        let dayTarget = updates[`departments/${matchedDept}/${dateStr}`];
-                                        if (rowCategory.includes('中班人力')) dayTarget.midManpower = Number(val) || 0;
-                                        else if (rowCategory.includes('中班-總機台數') || rowCategory.includes('中班總機台數')) dayTarget.midTotalMachines = Number(val) || 0;
-                                        else if (rowCategory.includes('中班-稼動機台') || rowCategory.includes('中班稼動機台')) dayTarget.midActiveMachines = Number(val) || 0;
-                                        else if (rowCategory.includes('夜班人力')) dayTarget.nightManpower = Number(val) || 0;
-                                        else if (rowCategory.includes('夜班-總機台數') || rowCategory.includes('夜班總機台數')) dayTarget.nightTotalMachines = Number(val) || 0;
-                                        else if (rowCategory.includes('夜班-稼動機台') || rowCategory.includes('夜班稼動機台')) dayTarget.nightActiveMachines = Number(val) || 0;
+                workbook.SheetNames.forEach(sheetName => {
+                    let matchedDept = DEPARTMENTS.find(d => sheetName.includes(d) || d.includes(sheetName));
+                    if (matchedDept) {
+                        matchedSheetsCount++;
+                        const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+                        if (json.length >= 1) {
+                            let headerRow = json[0];
+                            let dateIndexMap = {};
+                            for (let c = 1; c < headerRow.length; c++) {
+                                let parsedDate = cleanDateValue(headerRow[c]);
+                                if (DATES.includes(parsedDate)) dateIndexMap[c] = parsedDate;
+                            }
+
+                            for (let r = 1; r < json.length; r++) {
+                                let rowCategory = String(json[r][0] || "").trim();
+                                if (!rowCategory) continue;
+
+                                for (let c in dateIndexMap) {
+                                    let dateStr = dateIndexMap[c];
+                                    let val = json[r][c];
+
+                                    if (!updates[`departments/${matchedDept}/${dateStr}`]) {
+                                        updates[`departments/${matchedDept}/${dateStr}`] = globalDataCache[matchedDept]?.[dateStr] || {
+                                            midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
+                                            nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
+                                            midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
+                                        };
                                     }
+                                    let dayTarget = updates[`departments/${matchedDept}/${dateStr}`];
+                                    if (rowCategory.includes('中班人力')) dayTarget.midManpower = Number(val) || 0;
+                                    else if (rowCategory.includes('中班-總機台數') || rowCategory.includes('中班總機台數')) dayTarget.midTotalMachines = Number(val) || 0;
+                                    else if (rowCategory.includes('中班-稼動機台') || rowCategory.includes('中班稼動機台')) dayTarget.midActiveMachines = Number(val) || 0;
+                                    else if (rowCategory.includes('夜班人力')) dayTarget.nightManpower = Number(val) || 0;
+                                    else if (rowCategory.includes('夜班-總機台數') || rowCategory.includes('夜班總機台數')) dayTarget.nightTotalMachines = Number(val) || 0;
+                                    else if (rowCategory.includes('夜班-稼動機台') || rowCategory.includes('夜班稼動機台')) dayTarget.nightActiveMachines = Number(val) || 0;
                                 }
                             }
                         }
-                    });
-
-                    if (Object.keys(updates).length > 0 && matchedSheetsCount > 0) {
-                        await update(ref(db), updates);
-                        alert(`成功解析 ${matchedSheetsCount} 個工作表並同步至 Firebase！`);
-                    } else {
-                        alert("未偵測到符合的工作表名稱或日期格式。");
                     }
-                } catch (err) {
-                    alert("匯入解析失敗: " + err.message);
+                });
+
+                if (Object.keys(updates).length > 0 && matchedSheetsCount > 0) {
+                    await update(ref(db), updates);
+                    alert(`成功解析 ${matchedSheetsCount} 個工作表並同步至 Firebase（採用標準日期格式）！`);
+                } else {
+                    alert("未偵測到符合的工作表名稱或日期格式。");
                 }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-    </script>
-</body>
-</html>
+            } catch (err) {
+                alert("匯入解析失敗: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+</script>
