@@ -161,12 +161,20 @@
             <div class="bg-slate-50 border-2 border-slate-300 p-6 rounded-2xl shadow-sm flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-extrabold text-slate-950">各課中夜班稼動與人力雙軸趨勢分析</h2>
-                    <p class="text-xs font-bold text-slate-700 mt-1">柱狀圖表示機台稼動率 (%)，折線圖表示班別人力配置。匯出 PNG 時將自動標註課別與高清粗體黑字。</p>
+                    <p class="text-xs font-bold text-slate-700 mt-1">柱狀圖表示機台稼動率 (%)，折線圖表示班別人力配置。可自選月份或全選檢視。</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
                     <div>
                         <label class="block text-xs font-extrabold text-slate-800 mb-1">選擇製程課別</label>
                         <select id="chart-dept-select" onchange="renderCharts()" class="px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold focus:ring-2 focus:ring-blue-600">
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-extrabold text-slate-800 mb-1">選擇月份</label>
+                        <select id="chart-month-select" onchange="renderCharts()" class="px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold focus:ring-2 focus:ring-blue-600">
+                            <option value="all">全數顯示 (全部月份)</option>
+                            <option value="2026-10" selected>2026-10 (當月)</option>
+                            <option value="2026-09">2026-09</option>
                         </select>
                     </div>
                     <div class="self-end flex items-center gap-2">
@@ -225,20 +233,20 @@
 
         <!-- 分頁 2: 總表分析與趨勢建議 -->
         <div id="tab-summary" class="hidden space-y-6">
-            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md">
+            <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md space-y-6">
                 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
                     <div>
                         <h2 class="text-xl font-extrabold text-slate-950">全廠各課 KPI 稼動率趨勢分析與專業建議</h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">彙整各製程課之中夜班平均稼動率表現，並針對稼動瓶頸提出精準改善建議。支援 Excel 匯入與匯出。</p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">彙整各製程課之中夜班平均稼動率表現，並針對稼動瓶頸提出精準改善建議。支援 Excel 匯入匯出。</p>
                     </div>
                     <div class="flex items-center space-x-3 flex-wrap gap-2">
                         <button onclick="saveSummaryToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>儲存至雲端firebase
                         </button>
-                        <button onclick="exportSummaryToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
+                        <button onclick="exportSummaryToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-file-excel mr-1.5"></i>匯出Excel
                         </button>
-                        <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
+                        <label class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center cursor-pointer">
                             <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
                             <input type="file" id="summary-excel-input" accept=".xlsx, .xls" onchange="importSummaryExcel(event)" class="hidden">
                         </label>
@@ -275,9 +283,17 @@
                         <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
                             <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-2"></i>品質異常未處理清單與分析
                         </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">自動計算延遲天數，並提供趨勢分析圖、各課逐日累積統計圖與當月逐日累積件數檢視。</p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">自動計算「延遲天數未處理 = 日期 - 品保通知日期」，支援月份篩選、結案率分析與標準日期格式匯出入。</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
+                        <div class="flex items-center space-x-1.5 bg-slate-100 px-3 py-1.5 rounded-lg border-2 border-slate-300">
+                            <label class="text-xs font-extrabold text-slate-900"><i class="fa-regular fa-calendar-days mr-1 text-blue-700"></i>圖表月份篩選:</label>
+                            <select id="quality-month-filter" onchange="renderQualityCharts()" class="bg-white border border-slate-400 rounded px-2 py-1 text-xs font-bold text-slate-950">
+                                <option value="all">全數顯示 (累計)</option>
+                                <option value="2026-10" selected>2026-10 (當月)</option>
+                                <option value="2026-09">2026-09</option>
+                            </select>
+                        </div>
                         <button onclick="addQualityRow()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-3.5 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-plus mr-1.5"></i>新增品質異常列
                         </button>
@@ -295,17 +311,24 @@
                 </div>
 
                 <!-- 品質異常圖表分析區塊 -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
-                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm">
-                        <h3 class="font-extrabold text-slate-950 text-sm mb-3 flex items-center"><i class="fa-solid fa-chart-line text-blue-700 mr-2"></i>品質異常逐日累積件數趨勢圖</h3>
-                        <div class="relative h-72 w-full">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2 border-t-2 border-slate-200">
+                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-extrabold text-slate-950 text-sm"><i class="fa-solid fa-chart-line text-blue-700 mr-1.5"></i>品質異常「逐日累積件數」與分析趨勢圖</h3>
+                            <button onclick="exportSingleCanvasPNG('qualityTrendChart', '品質異常_逐日累積趨勢圖')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                        </div>
+                        <div class="relative h-80 w-full">
                             <canvas id="qualityTrendChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm">
-                        <h3 class="font-extrabold text-slate-950 text-sm mb-3 flex items-center"><i class="fa-solid fa-chart-bar text-amber-600 mr-2"></i>各課當月逐日累積統計圖</h3>
-                        <div class="relative h-72 w-full">
-                            <canvas id="qualityDeptBarChart"></canvas>
+                    <!-- 新增：各課結案率分析圖表 -->
+                    <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-extrabold text-slate-950 text-sm"><i class="fa-solid fa-chart-column text-emerald-700 mr-1.5"></i>各課「結案率分析」 (結案次數與結案率%)</h3>
+                            <button onclick="exportSingleCanvasPNG('qualityClosureChart', '品質異常_各課結案率分析圖')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                        </div>
+                        <div class="relative h-80 w-full">
+                            <canvas id="qualityClosureChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -343,7 +366,7 @@
                         <h2 class="text-xl font-extrabold text-slate-950 flex items-center">
                             <i class="fa-solid fa-chart-bar text-indigo-600 mr-2"></i>機台故障統計與歷史分析圖表 (滿版顯示)
                         </h2>
-                        <p class="text-xs font-bold text-slate-700 mt-1">橫條圖由上而下依累積停機天數由多到少排序，支援已結案與未結案雙向對比。</p>
+                        <p class="text-xs font-bold text-slate-700 mt-1">橫條圖由上而下依累積停機天數由多到少排序，已明確標註「次數」與「停機區間」標籤。</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="saveMachineToFirebase()" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-extrabold px-4 py-2 rounded-lg shadow transition flex items-center">
@@ -358,8 +381,8 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-extrabold text-slate-950 text-sm">依「課別」統計歷史停機 (排序由多到少)</h3>
-                            <button onclick="exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                            <h3 class="font-extrabold text-slate-950 text-sm">依「課別」統計歷史停機 (次數排序由多到少)</h3>
+                            <button onclick="exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別次數橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
                         </div>
                         <div class="relative h-96 w-full">
                             <canvas id="machineDeptChart"></canvas>
@@ -367,8 +390,8 @@
                     </div>
                     <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-extrabold text-slate-950 text-sm">依「機台編號」統計歷史停機 (排序由多到少)</h3>
-                            <button onclick="exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
+                            <h3 class="font-extrabold text-slate-950 text-sm">依「機台編號」統計歷史停機 (停機區間排序由多到少)</h3>
+                            <button onclick="exportSingleCanvasPNG('machineItemChart', '機故統計_依機台停機區間橫條分析')" class="text-xs bg-white text-slate-900 border border-slate-400 px-2.5 py-1 rounded font-bold hover:bg-slate-100">下載PNG</button>
                         </div>
                         <div class="relative h-96 w-full">
                             <canvas id="machineItemChart"></canvas>
@@ -596,6 +619,10 @@
             let dayStr = i < 10 ? `0${i}` : `${i}`;
             DATES.push(`2026-10-${dayStr}`);
         }
+        for (let i = 1; i <= 30; i++) {
+            let dayStr = i < 10 ? `0${i}` : `${i}`;
+            DATES.push(`2026-09-${dayStr}`);
+        }
 
         let globalDataCache = {};
         let midChartInstance = null;
@@ -603,7 +630,7 @@
         let machineDeptChartInstance = null;
         let machineItemChartInstance = null;
         let qualityTrendChartInstance = null;
-        let qualityDeptBarChartInstance = null;
+        let qualityClosureChartInstance = null;
         let currentSummaryPeriod = '7days';
 
         let localQualityData = [
@@ -841,9 +868,6 @@
             return str === '' || str === '無' || str === '正常' || str === '無異常';
         }
 
-        // ==========================================
-        // 各分頁「儲存至雲端 firebase」按鈕專屬功能
-        // ==========================================
         window.saveDashboardToFirebase = async function() {
             const dept = document.getElementById("chart-dept-select").value;
             if (!dept) return;
@@ -882,15 +906,24 @@
             }
         }
 
+        // 功能 1：各課中夜班稼動趨勢分析支援月份下拉選單
         window.renderCharts = function() {
             if (typeof Chart === 'undefined') return;
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
+            const selectedMonth = document.getElementById("chart-month-select") ? document.getElementById("chart-month-select").value : "2026-10";
             const deptData = globalDataCache[dept] || {};
 
-            document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班稼動與人力分析`;
-            document.getElementById("night-chart-title").innerHTML = `<i class="fa-solid fa-moon mr-2"></i>[${dept}] 夜班稼動與人力分析`;
+            document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班稼動與人力分析 (${selectedMonth === 'all' ? '全部月份' : selectedMonth})`;
+            document.getElementById("night-chart-title").innerHTML = `<i class="fa-solid fa-moon mr-2"></i>[${dept}] 夜班稼動與人力分析 (${selectedMonth === 'all' ? '全部月份' : selectedMonth})`;
 
-            const labels = DATES;
+            // 根據選定月份過濾日期
+            let targetDates = DATES.filter(d => {
+                if (selectedMonth === 'all') return true;
+                return d.startsWith(selectedMonth);
+            });
+            targetDates.sort(); // 依日期正序排列
+
+            const labels = targetDates;
             const midManpowerArr = [], midUtilArr = [], midLabelsArr = [];
             const nightManpowerArr = [], nightUtilArr = [], nightLabelsArr = [];
 
@@ -902,7 +935,7 @@
             let midHasException = false;
             let nightHasException = false;
 
-            DATES.forEach(date => {
+            targetDates.forEach(date => {
                 const dayObj = deptData[date] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'正常', nightDiscipline:'正常' };
                 
                 midManpowerArr.push(dayObj.midManpower);
@@ -993,7 +1026,7 @@
         }
 
         // ==========================================
-        // 品質異常未處理與統計圖表
+        // 品質異常未處理與統計圖表 (支援月份篩選與結案率分析)
         // ==========================================
         window.renderQualityTable = function() {
             const tbody = document.getElementById("quality-table-body");
@@ -1039,36 +1072,59 @@
             renderQualityCharts();
         }
 
-        function renderQualityCharts() {
+        window.renderQualityCharts = function() {
             if (typeof Chart === 'undefined') return;
-            
-            // 計算逐日累積件數
+
+            const selectedMonth = document.getElementById("quality-month-filter") ? document.getElementById("quality-month-filter").value : "all";
+
+            let filteredData = localQualityData.filter(q => {
+                if (selectedMonth === "all") return true;
+                let dStr = q.date ? String(q.date).slice(0, 7) : "";
+                return dStr === selectedMonth;
+            });
+
+            let targetDates = [];
+            if (selectedMonth === "all") {
+                targetDates = ["2026-09", "2026-10"]; // 簡化展示累積
+                let allDSet = new Set();
+                localQualityData.forEach(q => { if (q.date) allDSet.add(String(q.date).slice(0, 10)); });
+                targetDates = Array.from(allDSet).sort();
+            } else {
+                let [year, month] = selectedMonth.split('-');
+                let daysInMonth = new Date(year, month, 0).getDate();
+                for (let i = 1; i <= daysInMonth; i++) {
+                    let dayStr = i < 10 ? `0${i}` : `${i}`;
+                    targetDates.push(`${selectedMonth}-${dayStr}`);
+                }
+            }
+
             let dateCountMap = {};
-            DATES.forEach(d => dateCountMap[d] = 0);
-            localQualityData.forEach(q => {
-                let dStr = q.date ? q.date.slice(0, 10) : "";
+            targetDates.forEach(d => dateCountMap[d] = 0);
+
+            filteredData.forEach(q => {
+                let dStr = q.date ? String(q.date).slice(0, 10) : "";
                 if (dateCountMap[dStr] !== undefined) {
                     dateCountMap[dStr]++;
                 }
             });
 
             let cumulative = 0;
-            let trendLabels = DATES;
             let cumulativeData = [];
-            DATES.forEach(d => {
-                cumulative += dateCountMap[d];
+            targetDates.forEach(d => {
+                cumulative += (dateCountMap[d] || 0);
                 cumulativeData.push(cumulative);
             });
 
+            // 1. 逐日累積趨勢圖
             const ctxTrend = document.getElementById('qualityTrendChart');
             if (ctxTrend) {
                 if (qualityTrendChartInstance) qualityTrendChartInstance.destroy();
                 qualityTrendChartInstance = new Chart(ctxTrend.getContext('2d'), {
                     type: 'line',
                     data: {
-                        labels: trendLabels,
+                        labels: targetDates,
                         datasets: [{
-                            label: '當月品質異常逐日累積件數',
+                            label: selectedMonth === 'all' ? '全數期間品質異常逐日累積件數' : `${selectedMonth} 品質異常逐日累積件數`,
                             data: cumulativeData,
                             borderColor: 'rgb(29, 78, 216)',
                             backgroundColor: 'rgba(29, 78, 216, 0.1)',
@@ -1081,43 +1137,75 @@
                         responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
                         scales: {
-                            x: { ticks: { color: '#0f172a', font: { size: 10 } }, grid: { color: '#cbd5e1' } },
+                            x: { ticks: { color: '#0f172a', font: { size: 9, weight: 'bold' } }, grid: { color: '#cbd5e1' } },
                             y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 }
                         }
                     }
                 });
             }
 
-            // 各課當月累積統計圖
-            let deptCountMap = {};
-            RESPONSIBLE_UNITS.forEach(u => deptCountMap[u] = 0);
-            localQualityData.forEach(q => {
-                let u = q.dept || '其他';
-                if (deptCountMap[u] !== undefined) deptCountMap[u]++;
-                else deptCountMap[u] = (deptCountMap[u] || 0) + 1;
+            // 2. 功能 2：各課「結案率分析」圖表（柱狀顯示總件數/結案數，折線顯示結案率%）
+            let deptTotalMap = {};
+            let deptClosedMap = {};
+            RESPONSIBLE_UNITS.forEach(u => {
+                deptTotalMap[u] = 0;
+                deptClosedMap[u] = 0;
             });
 
-            const ctxDeptBar = document.getElementById('qualityDeptBarChart');
-            if (ctxDeptBar) {
-                if (qualityDeptBarChartInstance) qualityDeptBarChartInstance.destroy();
-                qualityDeptBarChartInstance = new Chart(ctxDeptBar.getContext('2d'), {
+            filteredData.forEach(q => {
+                let u = q.dept || '其他';
+                deptTotalMap[u] = (deptTotalMap[u] || 0) + 1;
+                if (q.status === '已結案') {
+                    deptClosedMap[u] = (deptClosedMap[u] || 0) + 1;
+                }
+            });
+
+            let activeDepts = Object.keys(deptTotalMap).filter(u => deptTotalMap[u] > 0);
+            let totalArr = activeDepts.map(u => deptTotalMap[u]);
+            let closedArr = activeDepts.map(u => deptClosedMap[u]);
+            let rateArr = activeDepts.map(u => deptTotalMap[u] > 0 ? ((deptClosedMap[u] / deptTotalMap[u]) * 100).toFixed(1) : 0);
+
+            const ctxClosure = document.getElementById('qualityClosureChart');
+            if (ctxClosure) {
+                if (qualityClosureChartInstance) qualityClosureChartInstance.destroy();
+                qualityClosureChartInstance = new Chart(ctxClosure.getContext('2d'), {
                     type: 'bar',
                     data: {
-                        labels: Object.keys(deptCountMap),
-                        datasets: [{
-                            label: '各課當月異常累積件數',
-                            data: Object.values(deptCountMap),
-                            backgroundColor: 'rgba(217, 119, 6, 0.85)',
-                            borderColor: 'rgb(180, 83, 9)',
-                            borderWidth: 1
-                        }]
+                        labels: activeDepts.length > 0 ? activeDepts : ['無異常資料'],
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: '異常總件數',
+                                data: activeDepts.length > 0 ? totalArr : [0],
+                                backgroundColor: 'rgba(217, 119, 6, 0.75)',
+                                order: 2
+                            },
+                            {
+                                type: 'bar',
+                                label: '已結案件數',
+                                data: activeDepts.length > 0 ? closedArr : [0],
+                                backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                                order: 2
+                            },
+                            {
+                                type: 'line',
+                                label: '結案率 (%)',
+                                data: activeDepts.length > 0 ? rateArr : [0],
+                                borderColor: 'rgb(29, 78, 216)',
+                                backgroundColor: 'rgb(29, 78, 216)',
+                                borderWidth: 3,
+                                yAxisID: 'y1',
+                                order: 1
+                            }
+                        ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
                         scales: {
                             x: { ticks: { color: '#0f172a', font: { size: 10, weight: 'bold' } }, grid: { color: '#cbd5e1' } },
-                            y: { ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 }
+                            y: { type: 'linear', position: 'left', title: { display: true, text: '次數 (件)', color: '#0f172a' }, ticks: { color: '#0f172a' }, grid: { color: '#cbd5e1' }, min: 0 },
+                            y1: { type: 'linear', position: 'right', title: { display: true, text: '結案率 (%)', color: '#0f172a' }, ticks: { color: '#0f172a' }, min: 0, max: 100, grid: { drawOnChartArea: false } }
                         }
                     }
                 });
@@ -1190,7 +1278,7 @@
         }
 
         // ==========================================
-        // 機故統計與歷史分析
+        // 機故統計與歷史分析 (功能 3：文字標籤「次數」與「停機區間」)
         // ==========================================
         window.renderMachineAnalytics = function() {
             if (typeof Chart === 'undefined') return;
@@ -1200,21 +1288,18 @@
             const now = new Date();
             let deptClosedMap = {};
             let deptUnclosedMap = {};
+            let deptCountMap = {}; // 次數統計
+            
             let itemClosedMap = {};
             let itemUnclosedMap = {};
+            let itemRangeMap = {}; // 停機區間/天數統計
+
             let allDepts = new Set(MACHINE_DEPTS);
             let allItems = new Set();
 
             localMachineData.forEach(m => {
                 if (m.dept) allDepts.add(m.dept);
                 if (m.item) allItems.add(m.item);
-                if (m.closed === 'Y') {
-                    if (!deptClosedMap[m.dept]) deptClosedMap[m.dept] = 0;
-                    if (!itemClosedMap[m.item]) itemClosedMap[m.item] = 0;
-                } else {
-                    if (!deptUnclosedMap[m.dept]) deptUnclosedMap[m.dept] = 0;
-                    if (!itemUnclosedMap[m.item]) itemUnclosedMap[m.item] = 0;
-                }
             });
 
             localMachineData.forEach((m, index) => {
@@ -1227,6 +1312,10 @@
                 }
 
                 m.calculatedDays = diffDays;
+
+                // 統計依課別 (次數與停機天數)
+                if (!deptCountMap[m.dept]) deptCountMap[m.dept] = 0;
+                deptCountMap[m.dept]++;
 
                 if (m.closed === 'Y') {
                     deptClosedMap[m.dept] = (deptClosedMap[m.dept] || 0) + diffDays;
@@ -1262,39 +1351,46 @@
                 tbody.appendChild(tr);
             });
 
+            // 依課別排序 (依「次數」由多到少)
             let deptList = Array.from(allDepts).map(d => {
+                let count = deptCountMap[d] || 0;
                 let closed = deptClosedMap[d] || 0;
                 let unclosed = deptUnclosedMap[d] || 0;
-                return { dept: d, closed, unclosed, total: closed + unclosed };
+                return { dept: d, count, closed, unclosed };
             });
-            deptList.sort((a, b) => b.total - a.total);
+            deptList.sort((a, b) => b.count - a.count);
 
             const ctxDept = document.getElementById('machineDeptChart').getContext('2d');
             if (machineDeptChartInstance) machineDeptChartInstance.destroy();
             machineDeptChartInstance = new Chart(ctxDept, {
                 type: 'bar',
                 data: {
-                    labels: deptList.map(item => item.dept),
+                    labels: deptList.map(item => `${item.dept} (${item.count}次)`),
                     datasets: [
-                        { label: '已結案停機天數', data: deptList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案/處理中停機天數', data: deptList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                        { label: '已結案停機次數/天數', data: deptList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                        { label: '未結案停機次數/天數', data: deptList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
                     ]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                    plugins: { 
+                        legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } },
+                        title: { display: true, text: '依「課別」統計歷史停機 (次數排序)', color: '#0f172a', font: { size: 12 } }
+                    },
                     scales: {
-                        x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
-                        y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                        x: { stacked: true, title: { display: true, text: '次數 / 天數', color: '#0f172a' }, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                        y: { stacked: true, title: { display: true, text: '課別 (次數)', color: '#0f172a' }, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
                     }
                 }
             });
 
+            // 依機台編號排序 (依「停機區間/天數」由多到少)
             let itemList = Array.from(allItems).map(i => {
                 let closed = itemClosedMap[i] || 0;
                 let unclosed = itemUnclosedMap[i] || 0;
-                return { item: i, closed, unclosed, total: closed + unclosed };
+                let total = closed + unclosed;
+                return { item: i, closed, unclosed, total };
             });
             itemList.sort((a, b) => b.total - a.total);
 
@@ -1303,19 +1399,22 @@
             machineItemChartInstance = new Chart(ctxItem, {
                 type: 'bar',
                 data: {
-                    labels: itemList.map(item => item.item),
+                    labels: itemList.map(item => `${item.item} (${item.total}天)`),
                     datasets: [
-                        { label: '已結案停機天數', data: itemList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案/處理中停機天數', data: itemList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                        { label: '已結案停機區間 (天數)', data: itemList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                        { label: '未結案停機區間 (天數)', data: itemList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
                     ]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } } },
+                    plugins: { 
+                        legend: { labels: { color: '#0f172a', font: { weight: 'bold' } } },
+                        title: { display: true, text: '依「機台編號」統計歷史停機 (停機區間排序)', color: '#0f172a', font: { size: 12 } }
+                    },
                     scales: {
-                        x: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
-                        y: { stacked: true, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
+                        x: { stacked: true, title: { display: true, text: '停機區間 (天數)', color: '#0f172a' }, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' }, min: 0 },
+                        y: { stacked: true, title: { display: true, text: '機台編號 (停機區間)', color: '#0f172a' }, ticks: { color: '#0f172a', font: { weight: 'bold' } }, grid: { color: '#cbd5e1' } }
                     }
                 }
             });
@@ -1419,8 +1518,8 @@
         }
 
         window.exportMachineChartsPNG = function() {
-            exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別橫條分析');
-            setTimeout(() => exportSingleCanvasPNG('machineItemChart', '機故統計_依機台橫條分析'), 300);
+            exportSingleCanvasPNG('machineDeptChart', '機故統計_依課別次數橫條分析');
+            setTimeout(() => exportSingleCanvasPNG('machineItemChart', '機故統計_依機台停機區間橫條分析'), 300);
             alert("機故橫條統計圖表已全數匯出高清 PNG！");
         }
 
@@ -1719,7 +1818,6 @@
                 return `${dateObj.getUTCFullYear()}-${String(dateObj.getUTCMonth() + 1).padStart(2, '0')}-${String(dateObj.getUTCDate()).padStart(2, '0')}`;
             }
             let str = String(val).trim();
-            // 如果含有時間或斜線，統一轉換為 YYYY-MM-DD 標準格式
             str = str.slice(0, 10).replace(/\//g, '-');
             return str;
         }
@@ -1753,17 +1851,17 @@
                                     if (!rowCategory) continue;
 
                                     for (let c in dateIndexMap) {
-                                        let dateStr = dateIndexMap[c];
+                                        let dataStr = dateIndexMap[c];
                                         let val = json[r][c];
 
-                                        if (!updates[`departments/${matchedDept}/${dateStr}`]) {
-                                            updates[`departments/${matchedDept}/${dateStr}`] = globalDataCache[matchedDept]?.[dateStr] || {
+                                        if (!updates[`departments/${matchedDept}/${dataStr}`]) {
+                                            updates[`departments/${matchedDept}/${dataStr}`] = globalDataCache[matchedDept]?.[dataStr] || {
                                                 midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
                                                 nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
                                                 midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
                                             };
                                         }
-                                        let dayTarget = updates[`departments/${matchedDept}/${dateStr}`];
+                                        let dayTarget = updates[`departments/${matchedDept}/${dataStr}`];
                                         if (rowCategory.includes('中班人力')) dayTarget.midManpower = Number(val) || 0;
                                         else if (rowCategory.includes('中班-總機台數') || rowCategory.includes('中班總機台數')) dayTarget.midTotalMachines = Number(val) || 0;
                                         else if (rowCategory.includes('中班-稼動機台') || rowCategory.includes('中班稼動機台')) dayTarget.midActiveMachines = Number(val) || 0;
