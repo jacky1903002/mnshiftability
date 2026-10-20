@@ -250,6 +250,14 @@
                             <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
                             <input type="file" id="summary-excel-input" accept=".xlsx, .xls" onchange="importSummaryExcel(event)" class="hidden">
                         </label>
+                        <!-- 清除雲端近七天 / 當月圖表資料按鈕 -->
+                        <button onclick="clearCloudDataByPeriod('7days')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold px-3 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-trash-can mr-1"></i>清除雲端近七天資料
+                        </button>
+                        <button onclick="clearCloudDataByPeriod('month')" class="bg-red-700 hover:bg-red-800 text-white text-xs font-extrabold px-3 py-2 rounded-lg shadow transition flex items-center">
+                            <i class="fa-solid fa-trash-can mr-1"></i>清除雲端當月總評資料
+                        </button>
+
                         <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg border-2 border-slate-300">
                             <button onclick="setSummaryPeriod('7days')" id="btn-period-7" class="px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow">近七天分析</button>
                             <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (10月) 總評</button>
@@ -667,7 +675,6 @@
             { dept: "金屬三課", item: "CM-96", start: "2026-10-08", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
         ];
 
-        // 轉換為標準格式 "2026/10/1"
         function toStandardDateStr(dateStr) {
             if (!dateStr) return "";
             let clean = String(dateStr).trim().slice(0, 10);
@@ -682,7 +689,6 @@
             return clean;
         }
 
-        // 解析各種日期格式回內部 "YYYY-MM-DD"
         function parseStandardDateStr(val) {
             if (!val) return "";
             if (typeof val === 'number') {
@@ -734,6 +740,51 @@
                 }
             } catch (err) {
                 alert("清除舊雲端稼動資料失敗: " + err.message);
+            }
+        }
+
+        // 清除雲端指定區間（近七天分析或當月總評）資料
+        window.clearCloudDataByPeriod = async function(periodType) {
+            let targetDates = [];
+            let periodName = "";
+            let octoberDates = DATES.filter(d => d.startsWith("2026-10")).sort();
+            if (periodType === '7days') {
+                let activeOctDates = octoberDates.filter(d => {
+                    const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
+                    return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
+                });
+                targetDates = activeOctDates.slice(-7);
+                periodName = "近七天分析";
+            } else {
+                targetDates = octoberDates.filter(d => {
+                    const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
+                    return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
+                });
+                periodName = "當月 (10月) 總評";
+            }
+
+            if (targetDates.length === 0) {
+                alert("目前沒有偵測到該範圍內的可清除資料。");
+                return;
+            }
+
+            if (!confirm(`確定要清除雲端【${periodName}】範圍內（${targetDates[0]} ~ ${targetDates[targetDates.length-1]}）的所有稼動率與排班資料嗎？`)) {
+                return;
+            }
+
+            try {
+                let deptUpdates = {};
+                DEPARTMENTS.forEach(dept => {
+                    targetDates.forEach(dateStr => {
+                        deptUpdates[`departments/${dept}/${dateStr}`] = null;
+                        deptUpdates[`departments/${dept}/${toStandardDateStr(dateStr)}`] = null;
+                    });
+                });
+                await update(ref(db), deptUpdates);
+                alert(`已成功清除雲端【${periodName}】範圍的稼動率資料！`);
+                fetchAllData();
+            } catch (err) {
+                alert("清除失敗: " + err.message);
             }
         }
 
@@ -1123,7 +1174,7 @@
                 let diffTime = currentDateObj - notifyDateObj;
                 let delayDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-                let statusColorClass = row.status === "已結案" ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-amber-100 text-amber-800 border-amber-300";
+                let statusColorClass = row.status === "已結案" ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-amber-100 text-amber-800 border-emerald-300";
 
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-100 transition border-b-2 border-slate-200";
@@ -1653,7 +1704,24 @@
         window.renderSummaryTable = function() {
             const tbody = document.getElementById("summary-table-body");
             tbody.innerHTML = "";
-            let targetDates = currentSummaryPeriod === '7days' ? DATES.slice(-7) : DATES;
+
+            // 動態抓取 10 月份實際有填寫稼動資料的日期範圍，排除未填寫的空白未來日
+            let octoberDates = DATES.filter(d => d.startsWith("2026-10")).sort();
+            let activeOctDates = octoberDates.filter(d => {
+                const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
+                return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
+            });
+
+            if (activeOctDates.length === 0) {
+                activeOctDates = octoberDates.slice(0, 21); // 預設對應前21天有資料的區間
+            }
+
+            let targetDates = [];
+            if (currentSummaryPeriod === '7days') {
+                targetDates = activeOctDates.slice(-7);
+            } else {
+                targetDates = activeOctDates;
+            }
 
             DEPARTMENTS.forEach(dept => {
                 const deptData = globalDataCache[dept] || {};
@@ -1661,7 +1729,6 @@
                 let count = targetDates.length;
 
                 targetDates.forEach(date => {
-                    // 智慧對應：同時檢查 YYYY-MM-DD、YYYY/M/D 等可能格式
                     const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
                     totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
                     totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
@@ -1696,11 +1763,18 @@
             let rows = [
                 ["製程課別", "中班平均稼動率(%)", "夜班平均稼動率(%)", "中班平均人力", "夜班平均人力", "趨勢分析與建議"]
             ];
+            let octoberDates = DATES.filter(d => d.startsWith("2026-10")).sort();
+            let activeOctDates = octoberDates.filter(d => {
+                const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
+                return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
+            });
+            if (activeOctDates.length === 0) activeOctDates = octoberDates.slice(0, 21);
+
             DEPARTMENTS.forEach(dept => {
                 const deptData = globalDataCache[dept] || {};
                 let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
-                let count = DATES.length;
-                DATES.forEach(date => {
+                let count = activeOctDates.length;
+                activeOctDates.forEach(date => {
                     const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
                     totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
                     totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
