@@ -321,7 +321,7 @@
                             <canvas id="qualityTrendChart"></canvas>
                         </div>
                     </div>
-                    <!-- 新增：各課結案率分析圖表 -->
+                    <!-- 各課結案率分析圖表 -->
                     <div class="bg-slate-50 p-5 rounded-xl border-2 border-slate-300 shadow-sm flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="font-extrabold text-slate-950 text-sm"><i class="fa-solid fa-chart-column text-emerald-700 mr-1.5"></i>各課「結案率分析」 (結案次數與結案率%)</h3>
@@ -535,33 +535,53 @@
             </div>
         </div>
 
-        <!-- 分頁 6: Excel 一鍵匯入匯出 -->
+        <!-- 分頁 6: Excel 一鍵匯入匯出與清除舊雲端稼動率資料 -->
         <div id="tab-excel" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 匯出 Excel -->
                 <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-emerald-300">
                             <i class="fa-solid fa-file-excel"></i>
                         </div>
                         <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵匯出 Excel 報表</h3>
-                        <p class="text-xs font-bold text-slate-700 mb-6">將目前 Firebase 上的完整多工作表 (Sheet) KPI 資料下載為標準 Excel 檔案（日期統一採用標準格式）。</p>
+                        <p class="text-xs font-bold text-slate-700 mb-6">將目前 Firebase 上的完整多工作表 (Sheet) KPI 資料下載為標準 Excel 檔案（日期統一採用 2026/10/1 格式，數值格式化）。</p>
                     </div>
                     <button onclick="exportAllToExcel()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-lg transition shadow flex items-center justify-center">
                         <i class="fa-solid fa-download mr-2"></i>下載完整 Excel 檔案
                     </button>
                 </div>
 
+                <!-- 匯入 Excel -->
                 <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-blue-300">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
                         <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵上傳/匯入 Excel 工作表</h3>
-                        <p class="text-xs font-bold text-slate-700 mb-6">上傳您的 Excel 檔案，系統自動比對工作表名稱與標準日期格式，一鍵更新至資料庫。</p>
+                        <p class="text-xs font-bold text-slate-700 mb-6">上傳您的 Excel 檔案，系統自動比對工作表名稱與標準日期格式（2026/10/1），一鍵更新至資料庫。</p>
                     </div>
                     <div>
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls" onchange="importExcelFile(event)" class="block w-full text-xs font-bold text-slate-800 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-2 file:border-slate-400 file:text-xs file:font-extrabold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100 cursor-pointer">
                     </div>
+                </div>
+
+                <!-- 清除舊雲端稼動率資料 -->
+                <div class="bg-white border-2 border-slate-300 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-red-100 text-red-800 rounded-xl flex items-center justify-center mb-4 text-xl border border-red-300">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <h3 class="font-extrabold text-slate-950 text-lg mb-2">清除舊雲端稼動率資料</h3>
+                        <p class="text-xs font-bold text-slate-700 mb-4">僅清除指定日期之前的所有課別舊稼動率與排班資料，不影響品質異常與機故歷史記錄。</p>
+                        <div class="mb-4">
+                            <label class="block text-xs font-extrabold text-slate-800 mb-1">清除此日期之前的稼動資料：</label>
+                            <input type="date" id="clear-old-date-input" value="2026-09-01" class="w-full px-3 py-2 border-2 border-slate-400 rounded-lg text-sm font-bold bg-white text-slate-950">
+                        </div>
+                    </div>
+                    <button onclick="clearOldCloudData()" class="w-full bg-red-700 hover:bg-red-800 text-white font-extrabold py-3 rounded-lg transition shadow flex items-center justify-center">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i>確認清除舊雲端稼動資料
+                    </button>
                 </div>
             </div>
         </div>
@@ -646,6 +666,77 @@
             { dept: "乾式製程課", item: "GM-25", start: "2026-10-05", end: "2026-10-09", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", closed: "Y" },
             { dept: "金屬三課", item: "CM-96", start: "2026-10-08", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
         ];
+
+        // 日期轉換工具函式：轉換為 "2026/10/1" 這種標準格式
+        function toStandardDateStr(dateStr) {
+            if (!dateStr) return "";
+            let clean = String(dateStr).trim().slice(0, 10);
+            let parts = clean.split(/[\/\-\.]/);
+            if (parts.length === 3) {
+                let y = parts[0];
+                let m = parseInt(parts[1], 10);
+                let d = parseInt(parts[2], 10);
+                if (y.length === 2) y = `20${y}`;
+                return `${y}/${m}/${d}`;
+            }
+            return clean;
+        }
+
+        // 解析 "2026/10/1" 或 Excel 序列值轉回內部 "YYYY-MM-DD"
+        function parseStandardDateStr(val) {
+            if (!val) return "";
+            if (typeof val === 'number') {
+                const utc_days = Math.floor(val - 25569);
+                const dateObj = new Date(utc_days * 86400 * 1000);
+                let y = dateObj.getUTCFullYear();
+                let m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                let d = String(dateObj.getUTCDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+            let str = String(val).trim();
+            let parts = str.split(/[\/\-\.]/);
+            if (parts.length === 3) {
+                let y = parts[0];
+                let m = String(parts[1]).padStart(2, '0');
+                let d = String(parts[2]).padStart(2, '0');
+                if (y.length === 2) y = `20${y}`;
+                return `${y}-${m}-${d}`;
+            }
+            return str;
+        }
+
+        // 僅針對稼動率資料清除舊雲端資料
+        window.clearOldCloudData = async function() {
+            const thresholdDate = document.getElementById("clear-old-date-input").value;
+            if (!thresholdDate) {
+                alert("請選擇有效的截止日期！");
+                return;
+            }
+            if (!confirm(`確定要清除 ${thresholdDate}（含）之前的所有雲端【稼動率】資料嗎？此操作將永久刪除舊稼動記錄。`)) {
+                return;
+            }
+            try {
+                let deptUpdates = {};
+                DEPARTMENTS.forEach(dept => {
+                    if (globalDataCache[dept]) {
+                        Object.keys(globalDataCache[dept]).forEach(dateStr => {
+                            if (dateStr < thresholdDate) {
+                                deptUpdates[`departments/${dept}/${dateStr}`] = null;
+                            }
+                        });
+                    }
+                });
+                if (Object.keys(deptUpdates).length > 0) {
+                    await update(ref(db), deptUpdates);
+                    alert(`已成功清除 ${thresholdDate} 之前的舊雲端稼動率資料！`);
+                    fetchAllData();
+                } else {
+                    alert("沒有符合條件的舊稼動率資料可供清除。");
+                }
+            } catch (err) {
+                alert("清除舊雲端稼動資料失敗: " + err.message);
+            }
+        }
 
         let isMobileMode = false;
         window.toggleDeviceMode = function() {
@@ -906,7 +997,6 @@
             }
         }
 
-        // 功能 1：各課中夜班稼動趨勢分析支援月份下拉選單
         window.renderCharts = function() {
             if (typeof Chart === 'undefined') return;
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
@@ -916,12 +1006,11 @@
             document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班稼動與人力分析 (${selectedMonth === 'all' ? '全部月份' : selectedMonth})`;
             document.getElementById("night-chart-title").innerHTML = `<i class="fa-solid fa-moon mr-2"></i>[${dept}] 夜班稼動與人力分析 (${selectedMonth === 'all' ? '全部月份' : selectedMonth})`;
 
-            // 根據選定月份過濾日期
             let targetDates = DATES.filter(d => {
                 if (selectedMonth === 'all') return true;
                 return d.startsWith(selectedMonth);
             });
-            targetDates.sort(); // 依日期正序排列
+            targetDates.sort();
 
             const labels = targetDates;
             const midManpowerArr = [], midUtilArr = [], midLabelsArr = [];
@@ -1025,9 +1114,6 @@
             });
         }
 
-        // ==========================================
-        // 品質異常未處理與統計圖表 (支援月份篩選與結案率分析)
-        // ==========================================
         window.renderQualityTable = function() {
             const tbody = document.getElementById("quality-table-body");
             tbody.innerHTML = "";
@@ -1085,7 +1171,6 @@
 
             let targetDates = [];
             if (selectedMonth === "all") {
-                targetDates = ["2026-09", "2026-10"]; // 簡化展示累積
                 let allDSet = new Set();
                 localQualityData.forEach(q => { if (q.date) allDSet.add(String(q.date).slice(0, 10)); });
                 targetDates = Array.from(allDSet).sort();
@@ -1115,7 +1200,6 @@
                 cumulativeData.push(cumulative);
             });
 
-            // 1. 逐日累積趨勢圖
             const ctxTrend = document.getElementById('qualityTrendChart');
             if (ctxTrend) {
                 if (qualityTrendChartInstance) qualityTrendChartInstance.destroy();
@@ -1144,7 +1228,6 @@
                 });
             }
 
-            // 2. 功能 2：各課「結案率分析」圖表（柱狀顯示總件數/結案數，折線顯示結案率%）
             let deptTotalMap = {};
             let deptClosedMap = {};
             RESPONSIBLE_UNITS.forEach(u => {
@@ -1161,9 +1244,9 @@
             });
 
             let activeDepts = Object.keys(deptTotalMap).filter(u => deptTotalMap[u] > 0);
-            let totalArr = activeDepts.map(u => deptTotalMap[u]);
-            let closedArr = activeDepts.map(u => deptClosedMap[u]);
-            let rateArr = activeDepts.map(u => deptTotalMap[u] > 0 ? ((deptClosedMap[u] / deptTotalMap[u]) * 100).toFixed(1) : 0);
+            let totalArr = activeDepts.map(u => Number(deptTotalMap[u]));
+            let closedArr = activeDepts.map(u => Number(deptClosedMap[u]));
+            let rateArr = activeDepts.map(u => deptTotalMap[u] > 0 ? Number(((deptClosedMap[u] / deptTotalMap[u]) * 100).toFixed(1)) : 0);
 
             const ctxClosure = document.getElementById('qualityClosureChart');
             if (ctxClosure) {
@@ -1233,7 +1316,16 @@
                 ["日期", "品保通知日期", "製程", "製令編號", "品號", "異常原因", "責任單位", "結案狀態"]
             ];
             localQualityData.forEach(q => {
-                rows.push([q.date ? String(q.date).slice(0,10) : "", q.notify ? String(q.notify).slice(0,10) : "", q.process, q.order, q.item, q.reason, q.dept, q.status]);
+                rows.push([
+                    toStandardDateStr(q.date), 
+                    toStandardDateStr(q.notify), 
+                    q.process, 
+                    q.order, 
+                    q.item, 
+                    q.reason, 
+                    q.dept, 
+                    q.status
+                ]);
             });
             const ws = XLSX.utils.aoa_to_sheet(rows);
             XLSX.utils.book_append_sheet(wb, ws, "品質異常未處理");
@@ -1257,8 +1349,8 @@
                             let row = json[r];
                             if (!row[0] && !row[3]) continue;
                             localQualityData.push({
-                                date: parseExcelDate(row[0]) || "2026-10-10",
-                                notify: parseExcelDate(row[1]) || "2026-10-06",
+                                date: parseStandardDateStr(row[0]) || "2026-10-10",
+                                notify: parseStandardDateStr(row[1]) || "2026-10-06",
                                 process: row[2] || "OQC",
                                 order: row[3] || "",
                                 item: row[4] || "",
@@ -1277,9 +1369,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // ==========================================
-        // 機故統計與歷史分析 (功能 3：文字標籤「次數」與「停機區間」)
-        // ==========================================
         window.renderMachineAnalytics = function() {
             if (typeof Chart === 'undefined') return;
             const tbody = document.getElementById("machine-table-body");
@@ -1288,11 +1377,10 @@
             const now = new Date();
             let deptClosedMap = {};
             let deptUnclosedMap = {};
-            let deptCountMap = {}; // 次數統計
+            let deptCountMap = {};
             
             let itemClosedMap = {};
             let itemUnclosedMap = {};
-            let itemRangeMap = {}; // 停機區間/天數統計
 
             let allDepts = new Set(MACHINE_DEPTS);
             let allItems = new Set();
@@ -1313,7 +1401,6 @@
 
                 m.calculatedDays = diffDays;
 
-                // 統計依課別 (次數與停機天數)
                 if (!deptCountMap[m.dept]) deptCountMap[m.dept] = 0;
                 deptCountMap[m.dept]++;
 
@@ -1351,11 +1438,10 @@
                 tbody.appendChild(tr);
             });
 
-            // 依課別排序 (依「次數」由多到少)
             let deptList = Array.from(allDepts).map(d => {
-                let count = deptCountMap[d] || 0;
-                let closed = deptClosedMap[d] || 0;
-                let unclosed = deptUnclosedMap[d] || 0;
+                let count = Number(deptCountMap[d] || 0);
+                let closed = Number(deptClosedMap[d] || 0);
+                let unclosed = Number(deptUnclosedMap[d] || 0);
                 return { dept: d, count, closed, unclosed };
             });
             deptList.sort((a, b) => b.count - a.count);
@@ -1367,8 +1453,8 @@
                 data: {
                     labels: deptList.map(item => `${item.dept} (${item.count}次)`),
                     datasets: [
-                        { label: '已結案停機次數/天數', data: deptList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案停機次數/天數', data: deptList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                        { label: '已結案停機次數/天數', data: deptList.map(item => Number(item.closed)), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                        { label: '未結案停機次數/天數', data: deptList.map(item => Number(item.unclosed)), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
                     ]
                 },
                 options: {
@@ -1385,10 +1471,9 @@
                 }
             });
 
-            // 依機台編號排序 (依「停機區間/天數」由多到少)
             let itemList = Array.from(allItems).map(i => {
-                let closed = itemClosedMap[i] || 0;
-                let unclosed = itemUnclosedMap[i] || 0;
+                let closed = Number(itemClosedMap[i] || 0);
+                let unclosed = Number(itemUnclosedMap[i] || 0);
                 let total = closed + unclosed;
                 return { item: i, closed, unclosed, total };
             });
@@ -1401,8 +1486,8 @@
                 data: {
                     labels: itemList.map(item => `${item.item} (${item.total}天)`),
                     datasets: [
-                        { label: '已結案停機區間 (天數)', data: itemList.map(item => item.closed), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
-                        { label: '未結案停機區間 (天數)', data: itemList.map(item => item.unclosed), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
+                        { label: '已結案停機區間 (天數)', data: itemList.map(item => Number(item.closed)), backgroundColor: 'rgba(16, 185, 129, 0.85)' },
+                        { label: '未結案停機區間 (天數)', data: itemList.map(item => Number(item.unclosed)), backgroundColor: 'rgba(239, 68, 68, 0.85)' }
                     ]
                 },
                 options: {
@@ -1444,8 +1529,8 @@
                 rows.push([
                     m.dept, 
                     m.item, 
-                    m.start ? String(m.start).slice(0,10) : "", 
-                    m.end ? String(m.end).slice(0,10) : "", 
+                    toStandardDateStr(m.start), 
+                    toStandardDateStr(m.end), 
                     m.category, 
                     m.desc, 
                     m.solution, 
@@ -1477,8 +1562,8 @@
                             localMachineData.push({
                                 dept: row[0] || "金屬一課",
                                 item: row[1] || "",
-                                start: parseExcelDate(row[2]) || "2026-10-01",
-                                end: parseExcelDate(row[3]) || "",
+                                start: parseStandardDateStr(row[2]) || "2026-10-01",
+                                end: parseStandardDateStr(row[3]) || "",
                                 category: row[4] || "",
                                 desc: row[5] || "",
                                 solution: row[6] || "",
@@ -1622,10 +1707,10 @@
                     totalMidMp += Number(dayObj.midManpower);
                     totalNightMp += Number(dayObj.nightManpower);
                 });
-                let avgMidU = count > 0 ? (totalMidUtil / count).toFixed(1) : 0;
-                let avgNightU = count > 0 ? (totalNightUtil / count).toFixed(1) : 0;
-                let avgMidMp = count > 0 ? (totalMidMp / count).toFixed(1) : 0;
-                let avgNightMp = count > 0 ? (totalNightMp / count).toFixed(1) : 0;
+                let avgMidU = count > 0 ? Number((totalMidUtil / count).toFixed(1)) : 0;
+                let avgNightU = count > 0 ? Number((totalNightUtil / count).toFixed(1)) : 0;
+                let avgMidMp = count > 0 ? Number((totalMidMp / count).toFixed(1)) : 0;
+                let avgNightMp = count > 0 ? Number((totalNightMp / count).toFixed(1)) : 0;
                 let trendAnalysis = avgMidU < 60 && avgNightU < 60 ? "【低稼動警示】中夜班稼動率均偏低" : "【穩定運行】稼動率維持正常區間";
                 rows.push([dept, avgMidU, avgNightU, avgMidMp, avgNightMp, trendAnalysis]);
             });
@@ -1699,14 +1784,15 @@
             if (!dept) return;
             const deptData = globalDataCache[dept] || {};
             const wb = XLSX.utils.book_new();
+            let formattedDates = DATES.map(d => toStandardDateStr(d));
             let rows = [
-                ["類別-日期", ...DATES],
-                ["中班人力", ...DATES.map(d => deptData[d]?.midManpower || 0)],
-                ["中班-總機台數", ...DATES.map(d => deptData[d]?.midTotalMachines || 0)],
-                ["中班-稼動機台", ...DATES.map(d => deptData[d]?.midActiveMachines || 0)],
-                ["夜班人力", ...DATES.map(d => deptData[d]?.nightManpower || 0)],
-                ["夜班-總機台數", ...DATES.map(d => deptData[d]?.nightTotalMachines || 0)],
-                ["夜班-稼動機台", ...DATES.map(d => deptData[d]?.nightActiveMachines || 0)],
+                ["類別-日期", ...formattedDates],
+                ["中班人力", ...DATES.map(d => Number(deptData[d]?.midManpower || 0))],
+                ["中班-總機台數", ...DATES.map(d => Number(deptData[d]?.midTotalMachines || 0))],
+                ["中班-稼動機台", ...DATES.map(d => Number(deptData[d]?.midActiveMachines || 0))],
+                ["夜班人力", ...DATES.map(d => Number(deptData[d]?.nightManpower || 0))],
+                ["夜班-總機台數", ...DATES.map(d => Number(deptData[d]?.nightTotalMachines || 0))],
+                ["夜班-稼動機台", ...DATES.map(d => Number(deptData[d]?.nightActiveMachines || 0))],
                 ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || "")],
                 ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || "")],
                 ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || "正常")],
@@ -1733,7 +1819,7 @@
                         let headerRow = json[0];
                         let dateIndexMap = {};
                         for (let c = 1; c < headerRow.length; c++) {
-                            let parsedDate = parseExcelDate(headerRow[c]);
+                            let parsedDate = parseStandardDateStr(headerRow[c]);
                             if (DATES.includes(parsedDate)) dateIndexMap[c] = parsedDate;
                         }
 
@@ -1791,14 +1877,15 @@
             const wb = XLSX.utils.book_new();
             DEPARTMENTS.forEach(dept => {
                 const deptData = globalDataCache[dept] || {};
+                let formattedDates = DATES.map(d => toStandardDateStr(d));
                 let rows = [
-                    ["類別-日期", ...DATES],
-                    ["中班人力", ...DATES.map(d => deptData[d]?.midManpower || 0)],
-                    ["中班-總機台數", ...DATES.map(d => deptData[d]?.midTotalMachines || 0)],
-                    ["中班-稼動機台", ...DATES.map(d => deptData[d]?.midActiveMachines || 0)],
-                    ["夜班人力", ...DATES.map(d => deptData[d]?.nightManpower || 0)],
-                    ["夜班-總機台數", ...DATES.map(d => deptData[d]?.nightTotalMachines || 0)],
-                    ["夜班-稼動機台", ...DATES.map(d => deptData[d]?.nightActiveMachines || 0)],
+                    ["類別-日期", ...formattedDates],
+                    ["中班人力", ...DATES.map(d => Number(deptData[d]?.midManpower || 0))],
+                    ["中班-總機台數", ...DATES.map(d => Number(deptData[d]?.midTotalMachines || 0))],
+                    ["中班-稼動機台", ...DATES.map(d => Number(deptData[d]?.midActiveMachines || 0))],
+                    ["夜班人力", ...DATES.map(d => Number(deptData[d]?.nightManpower || 0))],
+                    ["夜班-總機台數", ...DATES.map(d => Number(deptData[d]?.nightTotalMachines || 0))],
+                    ["夜班-稼動機台", ...DATES.map(d => Number(deptData[d]?.nightActiveMachines || 0))],
                     ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || "")],
                     ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || "")],
                     ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || "正常")],
@@ -1808,18 +1895,6 @@
                 XLSX.utils.book_append_sheet(wb, ws, dept);
             });
             XLSX.writeFile(wb, `工廠中夜班KPI總表_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-
-        function parseExcelDate(val) {
-            if (!val) return "";
-            if (typeof val === 'number') {
-                const utc_days = Math.floor(val - 25569);
-                const dateObj = new Date(utc_days * 86400 * 1000);
-                return `${dateObj.getUTCFullYear()}-${String(dateObj.getUTCMonth() + 1).padStart(2, '0')}-${String(dateObj.getUTCDate()).padStart(2, '0')}`;
-            }
-            let str = String(val).trim();
-            str = str.slice(0, 10).replace(/\//g, '-');
-            return str;
         }
 
         window.importExcelFile = function(e) {
@@ -1842,7 +1917,7 @@
                                 let headerRow = json[0];
                                 let dateIndexMap = {};
                                 for (let c = 1; c < headerRow.length; c++) {
-                                    let parsedDate = parseExcelDate(headerRow[c]);
+                                    let parsedDate = parseStandardDateStr(headerRow[c]);
                                     if (DATES.includes(parsedDate)) dateIndexMap[c] = parsedDate;
                                 }
 
