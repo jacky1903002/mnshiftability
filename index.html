@@ -1024,7 +1024,7 @@
             let nightHasException = false;
 
             targetDates.forEach(date => {
-                const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'正常', nightDiscipline:'正常' };
+                const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0, midNote:'', nightNote:'', midDiscipline:'正常', nightDiscipline:'正常' };
                 
                 midManpowerArr.push(dayObj.midManpower);
                 let midUtil = dayObj.midTotalMachines > 0 ? ((dayObj.midActiveMachines / dayObj.midTotalMachines) * 100).toFixed(1) : 0;
@@ -1661,11 +1661,12 @@
                 let count = targetDates.length;
 
                 targetDates.forEach(date => {
-                    const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
+                    // 智慧對應：同時檢查 YYYY-MM-DD、YYYY/M/D 等可能格式
+                    const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
                     totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
                     totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
-                    totalMidMp += Number(dayObj.midManpower);
-                    totalNightMp += Number(dayObj.nightManpower);
+                    totalMidMp += Number(dayObj.midManpower || 0);
+                    totalNightMp += Number(dayObj.nightManpower || 0);
                 });
 
                 let avgMidU = count > 0 ? totalMidUtil / count : 0;
@@ -1700,11 +1701,11 @@
                 let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
                 let count = DATES.length;
                 DATES.forEach(date => {
-                    const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
+                    const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
                     totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
                     totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
-                    totalMidMp += Number(dayObj.midManpower);
-                    totalNightMp += Number(dayObj.nightManpower);
+                    totalMidMp += Number(dayObj.midManpower || 0);
+                    totalNightMp += Number(dayObj.nightManpower || 0);
                 });
                 let avgMidU = count > 0 ? Number((totalMidUtil / count).toFixed(1)) : 0;
                 let avgNightU = count > 0 ? Number((totalNightUtil / count).toFixed(1)) : 0;
@@ -1740,7 +1741,7 @@
             const dept = document.getElementById("mgmt-dept-select").value;
             const date = document.getElementById("mgmt-date-select").value;
             if (!dept || !date) return;
-            const dayObj = globalDataCache[dept]?.[date] || globalDataCache[dept]?.[toStandardDateStr(date)] || { midManpower: 0, midTotalMachines: 0, midActiveMachines: 0, nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0, midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常' };
+            const dayObj = globalDataCache[dept]?.[date] || globalDataCache[dept]?.[toStandardDateStr(date)] || globalDataCache[dept]?.[date.replace(/-/g, '/')] || { midManpower: 0, midTotalMachines: 0, midActiveMachines: 0, nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0, midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常' };
 
             document.getElementById("mgmt-mid-manpower").value = dayObj.midManpower;
             document.getElementById("mgmt-mid-total").value = dayObj.midTotalMachines;
@@ -1786,16 +1787,16 @@
             let formattedDates = DATES.map(d => toStandardDateStr(d));
             let rows = [
                 ["類別-日期", ...formattedDates],
-                ["中班人力", ...DATES.map(d => Number(deptData[d]?.midManpower || deptData[toStandardDateStr(d)]?.midManpower || 0))],
-                ["中班-總機台數", ...DATES.map(d => Number(deptData[d]?.midTotalMachines || deptData[toStandardDateStr(d)]?.midTotalMachines || 0))],
-                ["中班-稼動機台", ...DATES.map(d => Number(deptData[d]?.midActiveMachines || deptData[toStandardDateStr(d)]?.midActiveMachines || 0))],
-                ["夜班人力", ...DATES.map(d => Number(deptData[d]?.nightManpower || deptData[toStandardDateStr(d)]?.nightManpower || 0))],
-                ["夜班-總機台數", ...DATES.map(d => Number(deptData[d]?.nightTotalMachines || deptData[toStandardDateStr(d)]?.nightTotalMachines || 0))],
-                ["夜班-稼動機台", ...DATES.map(d => Number(deptData[d]?.nightActiveMachines || deptData[toStandardDateStr(d)]?.nightActiveMachines || 0))],
-                ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || deptData[toStandardDateStr(d)]?.midNote || "")],
-                ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || deptData[toStandardDateStr(d)]?.nightNote || "")],
-                ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || deptData[toStandardDateStr(d)]?.midDiscipline || "正常")],
-                ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || deptData[toStandardDateStr(d)]?.nightDiscipline || "正常")]
+                ["中班人力", ...DATES.map(d => Number(deptData[d]?.midManpower || deptData[toStandardDateStr(d)]?.midManpower || deptData[d.replace(/-/g, '/')]?.midManpower || 0))],
+                ["中班-總機台數", ...DATES.map(d => Number(deptData[d]?.midTotalMachines || deptData[toStandardDateStr(d)]?.midTotalMachines || deptData[d.replace(/-/g, '/')]?.midTotalMachines || 0))],
+                ["中班-稼動機台", ...DATES.map(d => Number(deptData[d]?.midActiveMachines || deptData[toStandardDateStr(d)]?.midActiveMachines || deptData[d.replace(/-/g, '/')]?.midActiveMachines || 0))],
+                ["夜班人力", ...DATES.map(d => Number(deptData[d]?.nightManpower || deptData[toStandardDateStr(d)]?.nightManpower || deptData[d.replace(/-/g, '/')]?.nightManpower || 0))],
+                ["夜班-總機台數", ...DATES.map(d => Number(deptData[d]?.nightTotalMachines || deptData[toStandardDateStr(d)]?.nightTotalMachines || deptData[d.replace(/-/g, '/')]?.nightTotalMachines || 0))],
+                ["夜班-稼動機台", ...DATES.map(d => Number(deptData[d]?.nightActiveMachines || deptData[toStandardDateStr(d)]?.nightActiveMachines || deptData[d.replace(/-/g, '/')]?.nightActiveMachines || 0))],
+                ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || deptData[toStandardDateStr(d)]?.midNote || deptData[d.replace(/-/g, '/')]?.midNote || "")],
+                ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || deptData[toStandardDateStr(d)]?.nightNote || deptData[d.replace(/-/g, '/')]?.nightNote || "")],
+                ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || deptData[toStandardDateStr(d)]?.midDiscipline || deptData[d.replace(/-/g, '/')]?.midDiscipline || "正常")],
+                ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || deptData[toStandardDateStr(d)]?.nightDiscipline || deptData[d.replace(/-/g, '/')]?.nightDiscipline || "正常")]
             ];
             const ws = XLSX.utils.aoa_to_sheet(rows);
             XLSX.utils.book_append_sheet(wb, ws, dept);
@@ -1832,7 +1833,7 @@
                                 let val = json[r][c];
 
                                 if (!updates[dateStr]) {
-                                    updates[dateStr] = globalDataCache[dept]?.[dateStr] || globalDataCache[dept]?.[toStandardDateStr(dateStr)] || {
+                                    updates[dateStr] = globalDataCache[dept]?.[dateStr] || globalDataCache[dept]?.[toStandardDateStr(dateStr)] || globalDataCache[dept]?.[dateStr.replace(/-/g, '/')] || {
                                         midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
                                         nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
                                         midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
@@ -1879,16 +1880,16 @@
                 let formattedDates = DATES.map(d => toStandardDateStr(d));
                 let rows = [
                     ["類別-日期", ...formattedDates],
-                    ["中班人力", ...DATES.map(d => Number(deptData[d]?.midManpower || deptData[toStandardDateStr(d)]?.midManpower || 0))],
-                    ["中班-總機台數", ...DATES.map(d => Number(deptData[d]?.midTotalMachines || deptData[toStandardDateStr(d)]?.midTotalMachines || 0))],
-                    ["中班-稼動機台", ...DATES.map(d => Number(deptData[d]?.midActiveMachines || deptData[toStandardDateStr(d)]?.midActiveMachines || 0))],
-                    ["夜班人力", ...DATES.map(d => Number(deptData[d]?.nightManpower || deptData[toStandardDateStr(d)]?.nightManpower || 0))],
-                    ["夜班-總機台數", ...DATES.map(d => Number(deptData[d]?.nightTotalMachines || deptData[toStandardDateStr(d)]?.nightTotalMachines || 0))],
-                    ["夜班-稼動機台", ...DATES.map(d => Number(deptData[d]?.nightActiveMachines || deptData[toStandardDateStr(d)]?.nightActiveMachines || 0))],
-                    ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || deptData[toStandardDateStr(d)]?.midNote || "")],
-                    ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || deptData[toStandardDateStr(d)]?.nightNote || "")],
-                    ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || deptData[toStandardDateStr(d)]?.midDiscipline || "正常")],
-                    ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || deptData[toStandardDateStr(d)]?.nightDiscipline || "正常")]
+                    ["中班人力", ...DATES.map(d => Number(deptData[d]?.midManpower || deptData[toStandardDateStr(d)]?.midManpower || deptData[d.replace(/-/g, '/')]?.midManpower || 0))],
+                    ["中班-總機台數", ...DATES.map(d => Number(deptData[d]?.midTotalMachines || deptData[toStandardDateStr(d)]?.midTotalMachines || deptData[d.replace(/-/g, '/')]?.midTotalMachines || 0))],
+                    ["中班-稼動機台", ...DATES.map(d => Number(deptData[d]?.midActiveMachines || deptData[toStandardDateStr(d)]?.midActiveMachines || deptData[d.replace(/-/g, '/')]?.midActiveMachines || 0))],
+                    ["夜班人力", ...DATES.map(d => Number(deptData[d]?.nightManpower || deptData[toStandardDateStr(d)]?.nightManpower || deptData[d.replace(/-/g, '/')]?.nightManpower || 0))],
+                    ["夜班-總機台數", ...DATES.map(d => Number(deptData[d]?.nightTotalMachines || deptData[toStandardDateStr(d)]?.nightTotalMachines || deptData[d.replace(/-/g, '/')]?.nightTotalMachines || 0))],
+                    ["夜班-稼動機台", ...DATES.map(d => Number(deptData[d]?.nightActiveMachines || deptData[toStandardDateStr(d)]?.nightActiveMachines || deptData[d.replace(/-/g, '/')]?.nightActiveMachines || 0))],
+                    ["中班人機備註", ...DATES.map(d => deptData[d]?.midNote || deptData[toStandardDateStr(d)]?.midNote || deptData[d.replace(/-/g, '/')]?.midNote || "")],
+                    ["夜班人機備註", ...DATES.map(d => deptData[d]?.nightNote || deptData[toStandardDateStr(d)]?.nightNote || deptData[d.replace(/-/g, '/')]?.nightNote || "")],
+                    ["中班紀律", ...DATES.map(d => deptData[d]?.midDiscipline || deptData[toStandardDateStr(d)]?.midDiscipline || deptData[d.replace(/-/g, '/')]?.midDiscipline || "正常")],
+                    ["夜班紀律", ...DATES.map(d => deptData[d]?.nightDiscipline || deptData[toStandardDateStr(d)]?.nightDiscipline || deptData[d.replace(/-/g, '/')]?.nightDiscipline || "正常")]
                 ];
                 const ws = XLSX.utils.aoa_to_sheet(rows);
                 XLSX.utils.book_append_sheet(wb, ws, dept);
@@ -1929,7 +1930,7 @@
                                         let val = json[r][c];
 
                                         if (!updates[`departments/${matchedDept}/${dataStr}`]) {
-                                            updates[`departments/${matchedDept}/${dataStr}`] = globalDataCache[matchedDept]?.[dataStr] || globalDataCache[matchedDept]?.[toStandardDateStr(dataStr)] || {
+                                            updates[`departments/${matchedDept}/${dataStr}`] = globalDataCache[matchedDept]?.[dataStr] || globalDataCache[matchedDept]?.[toStandardDateStr(dataStr)] || globalDataCache[matchedDept]?.[dataStr.replace(/-/g, '/')] || {
                                                 midManpower: 0, midTotalMachines: 0, midActiveMachines: 0,
                                                 nightManpower: 0, nightTotalMachines: 0, nightActiveMachines: 0,
                                                 midNote: '', nightNote: '', midDiscipline: '正常', nightDiscipline: '正常'
@@ -1941,7 +1942,7 @@
                                         else if (rowCategory.includes('中班-稼動機台') || rowCategory.includes('中班稼動機台')) dayTarget.midActiveMachines = Number(val) || 0;
                                         else if (rowCategory.includes('夜班人力')) dayTarget.nightManpower = Number(val) || 0;
                                         else if (rowCategory.includes('夜班-總機台數') || rowCategory.includes('夜班總機台數')) dayTarget.nightTotalMachines = Number(val) || 0;
-                                        else if (rowCategory.includes('夜班-稼動機台') / rowCategory.includes('夜班稼動機台')) dayTarget.nightActiveMachines = Number(val) || 0;
+                                        else if (rowCategory.includes('夜班-稼動機台') || rowCategory.includes('夜班稼動機台')) dayTarget.nightActiveMachines = Number(val) || 0;
                                     }
                                 }
                             }
