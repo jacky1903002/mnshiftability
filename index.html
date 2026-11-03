@@ -173,7 +173,8 @@
                         <label class="block text-xs font-extrabold text-slate-800 mb-1">選擇月份</label>
                         <select id="chart-month-select" onchange="renderCharts()" class="px-4 py-2 bg-white border-2 border-slate-400 rounded-lg text-sm text-slate-950 font-bold focus:ring-2 focus:ring-blue-600">
                             <option value="all">全數顯示 (全部月份)</option>
-                            <option value="2026-10" selected>2026-10 (當月)</option>
+                            <option value="2026-11">2026-11 (當月)</option>
+                            <option value="2026-10">2026-10</option>
                             <option value="2026-09">2026-09</option>
                         </select>
                     </div>
@@ -260,7 +261,7 @@
 
                         <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg border-2 border-slate-300">
                             <button onclick="setSummaryPeriod('7days')" id="btn-period-7" class="px-4 py-1.5 text-xs font-extrabold rounded-md bg-blue-700 text-white shadow">近七天分析</button>
-                            <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (10月) 總評</button>
+                            <button onclick="setSummaryPeriod('month')" id="btn-period-month" class="px-4 py-1.5 text-xs font-extrabold rounded-md text-slate-800 hover:text-slate-950">當月 (11月) 總評</button>
                         </div>
                     </div>
                 </div>
@@ -298,7 +299,8 @@
                             <label class="text-xs font-extrabold text-slate-900"><i class="fa-regular fa-calendar-days mr-1 text-blue-700"></i>圖表月份篩選:</label>
                             <select id="quality-month-filter" onchange="renderQualityCharts()" class="bg-white border border-slate-400 rounded px-2 py-1 text-xs font-bold text-slate-950">
                                 <option value="all">全數顯示 (累計)</option>
-                                <option value="2026-10" selected>2026-10 (當月)</option>
+                                <option value="2026-11" selected>2026-11 (當月)</option>
+                                <option value="2026-10">2026-10</option>
                                 <option value="2026-09">2026-09</option>
                             </select>
                         </div>
@@ -553,7 +555,7 @@
                             <i class="fa-solid fa-file-excel"></i>
                         </div>
                         <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵匯出 Excel 報表</h3>
-                        <p class="text-xs font-bold text-slate-700 mb-6">將目前 Firebase 上的完整多工作表 (Sheet) KPI 資料下載為標準 Excel 檔案（日期統一採用 2026/10/1 格式，數值格式化）。</p>
+                        <p class="text-xs font-bold text-slate-700 mb-6">將目前 Firebase 上的完整多工作表 (Sheet) KPI 資料下載為標準 Excel 檔案（日期統一採用 2026/11/1 格式，數值格式化）。</p>
                     </div>
                     <button onclick="exportAllToExcel()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-lg transition shadow flex items-center justify-center">
                         <i class="fa-solid fa-download mr-2"></i>下載完整 Excel 檔案
@@ -567,7 +569,7 @@
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
                         <h3 class="font-extrabold text-slate-950 text-lg mb-2">一鍵上傳/匯入 Excel 工作表</h3>
-                        <p class="text-xs font-bold text-slate-700 mb-6">上傳您的 Excel 檔案，系統自動比對工作表名稱與標準日期格式（2026/10/1），一鍵更新至資料庫。</p>
+                        <p class="text-xs font-bold text-slate-700 mb-6">上傳您的 Excel 檔案，系統自動比對工作表名稱與標準日期格式（2026/11/1），一鍵更新至資料庫。</p>
                     </div>
                     <div>
                         <input type="file" id="excel-file-input" accept=".xlsx, .xls" onchange="importExcelFile(event)" class="block w-full text-xs font-bold text-slate-800 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-2 file:border-slate-400 file:text-xs file:font-extrabold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100 cursor-pointer">
@@ -584,7 +586,7 @@
                         <p class="text-xs font-bold text-slate-700 mb-4">僅清除指定日期之前的所有課別舊稼動率與排班資料，不影響品質異常與機故歷史記錄。</p>
                         <div class="mb-4">
                             <label class="block text-xs font-extrabold text-slate-800 mb-1">清除此日期之前的稼動資料：</label>
-                            <input type="date" id="clear-old-date-input" value="2026-09-01" class="w-full px-3 py-2 border-2 border-slate-400 rounded-lg text-sm font-bold bg-white text-slate-950">
+                            <input type="date" id="clear-old-date-input" value="2026-10-01" class="w-full px-3 py-2 border-2 border-slate-400 rounded-lg text-sm font-bold bg-white text-slate-950">
                         </div>
                     </div>
                     <button onclick="clearOldCloudData()" class="w-full bg-red-700 hover:bg-red-800 text-white font-extrabold py-3 rounded-lg transition shadow flex items-center justify-center">
@@ -642,7 +644,12 @@
         const QUALITY_PROCESSES = ["OQC", "IQC", "IPQC"];
         const QUALITY_STATUSES = ["已結案", "未結案"];
 
+        // [修正] 自動擴充日期產生範圍：涵蓋 2026-11 (1~30日)、2026-10 (1~31日) 與 2026-09 (1~30日)
         const DATES = [];
+        for (let i = 1; i <= 30; i++) {
+            let dayStr = i < 10 ? `0${i}` : `${i}`;
+            DATES.push(`2026-11-${dayStr}`);
+        }
         for (let i = 1; i <= 31; i++) {
             let dayStr = i < 10 ? `0${i}` : `${i}`;
             DATES.push(`2026-10-${dayStr}`);
@@ -662,15 +669,15 @@
         let currentSummaryPeriod = '7days';
 
         let localQualityData = [
-            { date: "2026-10-10", notify: "2026-10-06", process: "IPQC", order: "ML15-260806004", item: "F0004-ASSE000", reason: "牙缺角、牙GO NG", dept: "線切割課", status: "未結案" },
-            { date: "2026-10-10", notify: "2026-10-06", process: "OQC", order: "ML10-260526169", item: "F0924-SWTE000", reason: "缺角、牙GO NG", dept: "車床課", status: "已結案" },
+            { date: "2026-11-02", notify: "2026-10-30", process: "IPQC", order: "ML15-261030004", item: "F0004-ASSE000", reason: "牙缺角、牙GO NG", dept: "線切割課", status: "未結案" },
+            { date: "2026-11-02", notify: "2026-10-30", process: "OQC", order: "ML10-261029169", item: "F0924-SWTE000", reason: "缺角、牙GO NG", dept: "車床課", status: "已結案" },
             { date: "2026-10-10", notify: "2026-10-06", process: "IPQC", order: "ML10-260807070", item: "60824-STAG100", reason: "外觀異常色差", dept: "金屬一課", status: "未結案" },
             { date: "2026-10-10", notify: "2026-10-07", process: "OQC", order: "ML10-260909143", item: "14974-VWTE000", reason: "異常痕跡", dept: "溼式製程課", status: "已結案" }
         ];
 
         let localMachineData = [
-            { dept: "金屬二課", item: "CM-26", start: "2026-10-01", end: "2026-10-03", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", closed: "Y" },
-            { dept: "石墨銑床課", item: "CM-18", start: "2026-10-03", end: "", category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", closed: "" },
+            { dept: "金屬二課", item: "CM-26", start: "2026-11-01", end: "2026-11-03", category: "機械零件", desc: "主軸培林磨損產生異音", solution: "待更換新培林並試車完成", closed: "Y" },
+            { dept: "石墨銑床課", item: "CM-18", start: "2026-11-02", end: "", category: "電氣控制", desc: "X軸伺服馬達驅動器異常跳警報", solution: "重設參數並更換保險絲", closed: "" },
             { dept: "乾式製程課", item: "GM-25", start: "2026-10-05", end: "2026-10-09", category: "人為操作", desc: "操作員未依標準程序導致夾爪錯位", solution: "重新校正夾爪並加強人員複訓", closed: "Y" },
             { dept: "金屬三課", item: "CM-96", start: "2026-10-08", end: "", category: "軟體系統", desc: "數控系統當機無法讀取加工程式", solution: "重新開機無效待廠商確認控制器", closed: "" }
         ];
@@ -747,20 +754,17 @@
         window.clearCloudDataByPeriod = async function(periodType) {
             let targetDates = [];
             let periodName = "";
-            let octoberDates = DATES.filter(d => d.startsWith("2026-10")).sort();
+            let novemberDates = DATES.filter(d => d.startsWith("2026-11")).sort();
             if (periodType === '7days') {
-                let activeOctDates = octoberDates.filter(d => {
+                let activeNovDates = novemberDates.filter(d => {
                     const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
                     return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
                 });
-                targetDates = activeOctDates.slice(-7);
+                targetDates = activeNovDates.length > 0 ? activeNovDates.slice(-7) : novemberDates.slice(0, 7);
                 periodName = "近七天分析";
             } else {
-                targetDates = octoberDates.filter(d => {
-                    const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
-                    return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
-                });
-                periodName = "當月 (10月) 總評";
+                targetDates = novemberDates;
+                periodName = "當月 (11月) 總評";
             }
 
             if (targetDates.length === 0) {
@@ -1050,7 +1054,7 @@
         window.renderCharts = function() {
             if (typeof Chart === 'undefined') return;
             const dept = document.getElementById("chart-dept-select").value || DEPARTMENTS[0];
-            const selectedMonth = document.getElementById("chart-month-select") ? document.getElementById("chart-month-select").value : "2026-10";
+            const selectedMonth = document.getElementById("chart-month-select") ? document.getElementById("chart-month-select").value : "2026-11";
             const deptData = globalDataCache[dept] || {};
 
             document.getElementById("mid-chart-title").innerHTML = `<i class="fa-solid fa-sun mr-2"></i>[${dept}] 中班稼動與人力分析 (${selectedMonth === 'all' ? '全部月份' : selectedMonth})`;
@@ -1169,8 +1173,8 @@
             tbody.innerHTML = "";
 
             localQualityData.forEach((row, index) => {
-                let notifyDateObj = new Date(row.notify || "2026-10-06");
-                let currentDateObj = new Date(row.date || "2026-10-10");
+                let notifyDateObj = new Date(row.notify || "2026-11-01");
+                let currentDateObj = new Date(row.date || "2026-11-02");
                 let diffTime = currentDateObj - notifyDateObj;
                 let delayDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
@@ -1346,7 +1350,7 @@
         }
 
         window.addQualityRow = function() {
-            localQualityData.push({ date: "2026-10-10", notify: "2026-10-08", process: "IPQC", order: "ML10-261001001", item: "NEW-01", reason: "新登錄異常", dept: "金屬一課", status: "未結案" });
+            localQualityData.push({ date: "2026-11-02", notify: "2026-10-30", process: "IPQC", order: "ML10-261101001", item: "NEW-01", reason: "新登錄異常", dept: "金屬一課", status: "未結案" });
             renderQualityTable();
         }
 
@@ -1399,8 +1403,8 @@
                             let row = json[r];
                             if (!row[0] && !row[3]) continue;
                             localQualityData.push({
-                                date: parseStandardDateStr(row[0]) || "2026-10-10",
-                                notify: parseStandardDateStr(row[1]) || "2026-10-06",
+                                date: parseStandardDateStr(row[0]) || "2026-11-02",
+                                notify: parseStandardDateStr(row[1]) || "2026-10-30",
                                 process: row[2] || "OQC",
                                 order: row[3] || "",
                                 item: row[4] || "",
@@ -1556,7 +1560,7 @@
         }
 
         window.addMachineRow = function() {
-            localMachineData.push({ dept: "金屬一課", item: "CM-99", start: "2026-10-09", end: "", category: "機械零件", desc: "新登錄故障", solution: "待處理", closed: "" });
+            localMachineData.push({ dept: "金屬一課", item: "CM-99", start: "2026-11-02", end: "", category: "機械零件", desc: "新登錄故障", solution: "待處理", closed: "" });
             renderMachineAnalytics();
         }
 
@@ -1612,7 +1616,7 @@
                             localMachineData.push({
                                 dept: row[0] || "金屬一課",
                                 item: row[1] || "",
-                                start: parseStandardDateStr(row[2]) || "2026-10-01",
+                                start: parseStandardDateStr(row[2]) || "2026-11-01",
                                 end: parseStandardDateStr(row[3]) || "",
                                 category: row[4] || "",
                                 desc: row[5] || "",
@@ -1705,22 +1709,22 @@
             const tbody = document.getElementById("summary-table-body");
             tbody.innerHTML = "";
 
-            // 動態抓取 10 月份實際有填寫稼動資料的日期範圍，排除未填寫的空白未來日
-            let octoberDates = DATES.filter(d => d.startsWith("2026-10")).sort();
-            let activeOctDates = octoberDates.filter(d => {
+            // 動態抓取 11 月份實際有填寫稼動資料的日期範圍
+            let novemberDates = DATES.filter(d => d.startsWith("2026-11")).sort();
+            let activeNovDates = novemberDates.filter(d => {
                 const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
                 return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
             });
 
-            if (activeOctDates.length === 0) {
-                activeOctDates = octoberDates.slice(0, 21); // 預設對應前21天有資料的區間
+            if (activeNovDates.length === 0) {
+                activeNovDates = novemberDates.slice(0, 30); 
             }
 
             let targetDates = [];
             if (currentSummaryPeriod === '7days') {
-                targetDates = activeOctDates.slice(-7);
+                targetDates = activeNovDates.slice(-7);
             } else {
-                targetDates = activeOctDates;
+                targetDates = activeNovDates;
             }
 
             DEPARTMENTS.forEach(dept => {
@@ -1763,18 +1767,18 @@
             let rows = [
                 ["製程課別", "中班平均稼動率(%)", "夜班平均稼動率(%)", "中班平均人力", "夜班平均人力", "趨勢分析與建議"]
             ];
-            let octoberDates = DATES.filter(d => d.startsWith("2026-10")).sort();
-            let activeOctDates = octoberDates.filter(d => {
+            let novemberDates = DATES.filter(d => d.startsWith("2026-11")).sort();
+            let activeNovDates = novemberDates.filter(d => {
                 const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
                 return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
             });
-            if (activeOctDates.length === 0) activeOctDates = octoberDates.slice(0, 21);
+            if (activeNovDates.length === 0) activeNovDates = novemberDates.slice(0, 30);
 
             DEPARTMENTS.forEach(dept => {
                 const deptData = globalDataCache[dept] || {};
                 let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
-                let count = activeOctDates.length;
-                activeOctDates.forEach(date => {
+                let count = activeNovDates.length;
+                activeNovDates.forEach(date => {
                     const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
                     totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
                     totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
