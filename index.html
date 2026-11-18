@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <!-- 新增：一鍵匯出集中式 PDF 報表按鈕 -->
+                <!-- 一鍵匯出集中式完整 PDF 報表按鈕 -->
                 <button onclick="exportAllDataToPDF()" class="bg-red-600 hover:bg-red-500 text-white text-xs px-3.5 py-1.5 rounded-lg transition shadow font-extrabold flex items-center space-x-1.5">
                     <i class="fa-solid fa-file-pdf"></i><span>一鍵匯出集中 PDF 報表</span>
                 </button>
@@ -604,23 +604,25 @@
 
     </div>
 
-    <!-- 隱藏的集中式 PDF 報告生成樣板（確保數據與圖表集中、不分散） -->
-    <div id="pdf-export-container" style="position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: sans-serif;">
-        <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e293b; padding-bottom: 10px;">
-            <h1 style="font-size: 22px; font-weight: bold; color: #0f172a; margin: 0;">工廠中夜班 KPI 智慧管理系統 - 綜合分析總報告</h1>
-            <p style="font-size: 12px; color: #475569; margin: 5px 0 0 0;">製表日期: <span id="pdf-report-date"></span> | 匯集全廠稼動、品質異常與機故統計數據</p>
+    <!-- 隱藏的集中式完整 PDF 報告生成樣板（確保所有分頁圖表、數據、異常與紀律完整收錄） -->
+    <div id="pdf-export-container" style="position: absolute; left: -9999px; top: 0; width: 850px; background: white; padding: 25px; font-family: sans-serif;">
+        <div style="text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e293b; padding-bottom: 12px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0f172a; margin: 0;">工廠中夜班 KPI 智慧管理系統 - 企業全方位綜合總報告</h1>
+            <p style="font-size: 13px; color: #475569; margin: 6px 0 0 0;">製表日期: <span id="pdf-report-date"></span> | 匯集全廠各課稼動圖表、總表分析、品質異常與機故歷史統計</p>
         </div>
 
-        <!-- 區塊 1: 總表分析摘要 -->
-        <div style="margin-bottom: 25px;">
-            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 6px 10px; margin: 0 0 10px 0;">一、 全廠各課 KPI 平均表現摘要</h3>
+        <!-- 區塊 1: 分頁二 - 全廠各課 KPI 稼動率趨勢分析與專業建議 -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 15px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 8px 12px; margin: 0 0 12px 0; border-left: 5px solid #2563eb;">一、 分頁二：全廠各課 KPI 稼動率趨勢分析與專業建議</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
                 <thead>
                     <tr style="background: #cbd5e1; color: #0f172a;">
                         <th style="border: 1px solid #94a3b8; padding: 6px; text-align: left;">製程課別</th>
-                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">中班平均稼動率</th>
-                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">夜班平均稼動率</th>
-                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: left;">運行趨勢與建議</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">中班平均稼動</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">夜班平均稼動</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">中班人力</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">夜班人力</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: left;">趨勢分析與專業建議</th>
                     </tr>
                 </thead>
                 <tbody id="pdf-summary-table-body">
@@ -628,42 +630,58 @@
             </table>
         </div>
 
-        <!-- 區塊 2: 集中圖表預覽區 -->
-        <div style="margin-bottom: 25px;">
-            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 6px 10px; margin: 0 0 10px 0;">二、 核心營運與異常圖表集中檢視</h3>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
-                    <p style="font-size: 12px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">各課代表中班稼動趨勢圖</p>
-                    <img id="pdf-img-mid" style="max-width: 100%; height: auto; max-height: 220px;" />
-                </div>
-                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
-                    <p style="font-size: 12px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">品質異常逐日累積趨勢圖</p>
-                    <img id="pdf-img-quality" style="max-width: 100%; height: auto; max-height: 200px;" />
-                </div>
-                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
-                    <p style="font-size: 12px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">機台故障依課別停機次數統計圖</p>
-                    <img id="pdf-img-machine" style="max-width: 100%; height: auto; max-height: 200px;" />
-                </div>
+        <!-- 區塊 2: 分頁一 - 各課圖表分析與中夜班異常紀律紀錄 -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 15px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 8px 12px; margin: 0 0 12px 0; border-left: 5px solid #2563eb;">二、 分頁一：各製程課圖表分析與中夜班異常紀律紀錄 (全課彙整)</h3>
+            <div id="pdf-all-departments-container" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- 動態填入所有課別的圖表與異常紀律紀錄 -->
             </div>
         </div>
 
-        <!-- 區塊 3: 品質異常未處理摘要 -->
-        <div style="margin-bottom: 20px;">
-            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 6px 10px; margin: 0 0 10px 0;">三、 品質異常與未結案摘要清單</h3>
+        <!-- 區塊 3: 分頁三 - 品質異常未處理清單與分析 -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 15px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 8px 12px; margin: 0 0 12px 0; border-left: 5px solid #d97706;">三、 分頁三：品質異常未處理清單與分析摘要</h3>
             <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
                 <thead>
                     <tr style="background: #cbd5e1; color: #0f172a;">
                         <th style="border: 1px solid #94a3b8; padding: 5px;">日期</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">品保通知</th>
                         <th style="border: 1px solid #94a3b8; padding: 5px;">製程</th>
                         <th style="border: 1px solid #94a3b8; padding: 5px;">製令編號</th>
                         <th style="border: 1px solid #94a3b8; padding: 5px;">異常原因</th>
                         <th style="border: 1px solid #94a3b8; padding: 5px;">責任單位</th>
-                        <th style="border: 1px solid #94a3b8; padding: 5px;">狀態</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px; text-align: center;">狀態</th>
                     </tr>
                 </thead>
                 <tbody id="pdf-quality-table-body">
                 </tbody>
             </table>
+            <!-- 品質異常分析圖表預覽 -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 11px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">品質異常逐日累積趨勢圖</p>
+                    <img id="pdf-img-quality-trend" style="max-width: 100%; height: auto; max-height: 180px;" />
+                </div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 11px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">各課結案率分析圖</p>
+                    <img id="pdf-img-quality-closure" style="max-width: 100%; height: auto; max-height: 180px;" />
+                </div>
+            </div>
+        </div>
+
+        <!-- 區塊 4: 分頁四 - 機台故障統計與歷史分析圖表 (滿版顯示) -->
+        <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 15px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 8px 12px; margin: 0 0 12px 0; border-left: 5px solid #4f46e5;">四、 分頁四：機台故障統計與歷史分析圖表 (滿版顯示)</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 11px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">依「課別」統計歷史停機 (次數排序由多到少)</p>
+                    <img id="pdf-img-machine-dept" style="max-width: 100%; height: auto; max-height: 200px;" />
+                </div>
+                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 11px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">依「機台編號」統計歷史停機 (停機區間排序由多到少)</p>
+                    <img id="pdf-img-machine-item" style="max-width: 100%; height: auto; max-height: 200px;" />
+                </div>
+            </div>
         </div>
     </div>
 
@@ -787,19 +805,19 @@
         }
 
         // ==========================================
-        // [新增功能] 一鍵集中匯出 PDF 報表核心邏輯
+        // [修正升級] 一鍵匯出所有分頁之完整集中 PDF 報表
         // ==========================================
         window.exportAllDataToPDF = async function() {
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在集中匯出 PDF...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在產生全功能 PDF 報表...`;
             btn.disabled = true;
 
             try {
-                // 1. 填入當前報表日期
+                // 1. 設定製表日期
                 document.getElementById("pdf-report-date").innerText = new Date().toISOString().slice(0, 10);
 
-                // 2. 填充總表摘要數據到 PDF 隱藏區塊
+                // 2. 填入「分頁二：總表分析與專業建議」完整數據
                 let pdfSummaryBody = document.getElementById("pdf-summary-table-body");
                 pdfSummaryBody.innerHTML = "";
                 let novemberDates = DATES.filter(d => d.startsWith("2026-11")).sort();
@@ -809,61 +827,151 @@
                 });
                 if (activeNovDates.length === 0) activeNovDates = novemberDates.slice(0, 30);
 
-                DEPARTMENTS.slice(0, 6).forEach(dept => { // 匯出前6個核心製程避免過長
+                DEPARTMENTS.forEach(dept => {
                     const deptData = globalDataCache[dept] || {};
-                    let totalMidUtil = 0, totalNightUtil = 0;
+                    let totalMidUtil = 0, totalNightUtil = 0, totalMidMp = 0, totalNightMp = 0;
                     let count = activeNovDates.length;
                     activeNovDates.forEach(date => {
-                        const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midTotalMachines:1, midActiveMachines:0, nightTotalMachines:1, nightActiveMachines:0 };
+                        const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midManpower:0, midTotalMachines:1, midActiveMachines:0, nightManpower:0, nightTotalMachines:1, nightActiveMachines:0 };
                         totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
                         totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
+                        totalMidMp += Number(dayObj.midManpower || 0);
+                        totalNightMp += Number(dayObj.nightManpower || 0);
                     });
                     let avgMidU = count > 0 ? (totalMidUtil / count).toFixed(1) : 0;
                     let avgNightU = count > 0 ? (totalNightUtil / count).toFixed(1) : 0;
-                    let trendText = avgMidU < 60 ? "低稼動警示(<60%)" : "運行正常";
+                    let avgMidMp = count > 0 ? (totalMidMp / count).toFixed(1) : 0;
+                    let avgNightMp = count > 0 ? (totalNightMp / count).toFixed(1) : 0;
+                    let trendText = avgMidU < 60 && avgNightU < 60 ? "【低稼動警示】中夜班稼動率均偏低" : "【穩定運行】稼動率維持正常區間";
 
                     pdfSummaryBody.innerHTML += `
                         <tr>
                             <td style="border: 1px solid #94a3b8; padding: 5px; font-weight: bold;">${dept}</td>
-                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center; color: #b45309;">${avgMidU}%</td>
-                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center; color: #4338ca;">${avgNightU}%</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center; color: #b45309; font-weight: bold;">${avgMidU}%</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center; color: #4338ca; font-weight: bold;">${avgNightU}%</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center;">${avgMidMp} 人</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center;">${avgNightMp} 人</td>
                             <td style="border: 1px solid #94a3b8; padding: 5px;">${trendText}</td>
                         </tr>
                     `;
                 });
 
-                // 3. 填充品質異常清單摘要到 PDF 隱藏區塊
+                // 3. 填入「分頁一：各課圖表分析與異常紀律紀錄」（自動循環所有課別並產生臨時 Canvas 截圖）
+                let pdfAllDeptContainer = document.getElementById("pdf-all-departments-container");
+                pdfAllDeptContainer.innerHTML = "";
+
+                // 暫時建立一個隱藏的高畫質繪圖 Canvas 供 Chart.js 渲染使用
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 700;
+                tempCanvas.height = 300;
+                tempCanvas.style.display = 'none';
+                document.body.appendChild(tempCanvas);
+
+                for (let i = 0; i < DEPARTMENTS.length; i++) {
+                    let deptName = DEPARTMENTS[i];
+                    let deptData = globalDataCache[deptName] || {};
+
+                    // 收集該課異常與紀律紀錄
+                    let midExceptions = [];
+                    let nightExceptions = [];
+                    let targetDates = activeNovDates;
+
+                    targetDates.forEach(date => {
+                        let dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midNote:'', nightNote:'', midDiscipline:'正常', nightDiscipline:'正常' };
+                        let midHasIssue = !isNormalText(dayObj.midNote) || !isNormalText(dayObj.midDiscipline);
+                        let nightHasIssue = !isNormalText(dayObj.nightNote) || !isNormalText(dayObj.nightDiscipline);
+                        if (midHasIssue) midExceptions.push(`${date} 備註:${dayObj.midNote||'無'} / 紀律:${dayObj.midDiscipline||'正常'}`);
+                        if (nightHasIssue) nightExceptions.push(`${date} 備註:${dayObj.nightNote||'無'} / 紀律:${dayObj.nightDiscipline||'正常'}`);
+                    });
+
+                    let midExpHtml = midExceptions.length > 0 ? midExceptions.map(e => `• ${e}`).join('<br>') : "• 近期中班運作正常";
+                    let nightExpHtml = nightExceptions.length > 0 ? nightExceptions.map(e => `• ${e}`).join('<br>') : "• 近期夜班運作正常";
+
+                    // 產生該課的中班與夜班數據
+                    let midUtilArr = [], nightUtilArr = [];
+                    targetDates.forEach(date => {
+                        let dObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midTotalMachines:1, midActiveMachines:0, nightTotalMachines:1, nightActiveMachines:0 };
+                        let mU = dObj.midTotalMachines > 0 ? ((dObj.midActiveMachines / dObj.midTotalMachines) * 100).toFixed(1) : 0;
+                        let nU = dObj.nightTotalMachines > 0 ? ((dObj.nightActiveMachines / dObj.nightTotalMachines) * 100).toFixed(1) : 0;
+                        midUtilArr.push(mU);
+                        nightUtilArr.push(nU);
+                    });
+
+                    // 渲染臨時 Chart.js 抓取圖片
+                    let chartImgData = "";
+                    try {
+                        let tempChart = new Chart(tempCanvas.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: targetDates.map(d => d.slice(5)),
+                                datasets: [
+                                    { label: '中班稼動率(%)', data: midUtilArr, backgroundColor: 'rgba(217, 119, 6, 0.85)' },
+                                    { label: '夜班稼動率(%)', data: nightUtilArr, backgroundColor: 'rgba(79, 70, 229, 0.85)' }
+                                ]
+                            },
+                            options: { animation: false, responsive: false, scales: { y: { min: 0, max: 100 } } }
+                        });
+                        chartImgData = tempCanvas.toDataURL("image/png");
+                        tempChart.destroy();
+                    } catch(err) {}
+
+                    // 組合該課 HTML 區塊
+                    let deptBlock = document.createElement("div");
+                    deptBlock.style.cssText = "border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; background: #f8fafc; margin-bottom: 12px;";
+                    deptBlock.innerHTML = `
+                        <h4 style="font-size: 13px; font-weight: bold; color: #1e293b; margin: 0 0 8px 0; border-bottom: 2px solid #94a3b8; padding-bottom: 4px;">製程課別：${deptName}</h4>
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div style="flex: 1; text-align: center;">
+                                ${chartImgData ? `<img src="${chartImgData}" style="max-width: 100%; height: 120px;" />` : '<span style="font-size:10px;">圖表產生中</span>'}
+                            </div>
+                            <div style="flex: 1; font-size: 10px; background: white; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="color: #b45309; font-weight: bold; margin-bottom: 3px;"><i class="fa-solid fa-sun"></i> 中班異常與紀律紀錄:</div>
+                                <div style="margin-bottom: 6px; color: #0f172a;">${midExpHtml}</div>
+                                <div style="color: #4338ca; font-weight: bold; margin-bottom: 3px;"><i class="fa-solid fa-moon"></i> 夜班異常與紀律紀錄:</div>
+                                <div style="color: #0f172a;">${nightExpHtml}</div>
+                            </div>
+                        </div>
+                    `;
+                    pdfAllDeptContainer.appendChild(deptBlock);
+                }
+                document.body.removeChild(tempCanvas);
+
+                // 4. 填入「分頁三：品質異常未處理」清單與分析圖表
                 let pdfQualityBody = document.getElementById("pdf-quality-table-body");
                 pdfQualityBody.innerHTML = "";
-                localQualityData.slice(0, 5).forEach(q => {
+                localQualityData.forEach(q => {
                     pdfQualityBody.innerHTML += `
                         <tr>
                             <td style="border: 1px solid #94a3b8; padding: 4px;">${q.date}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.notify}</td>
                             <td style="border: 1px solid #94a3b8; padding: 4px;">${q.process}</td>
-                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.order}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px; font-family: monospace;">${q.order}</td>
                             <td style="border: 1px solid #94a3b8; padding: 4px;">${q.reason}</td>
                             <td style="border: 1px solid #94a3b8; padding: 4px;">${q.dept}</td>
-                            <td style="border: 1px solid #94a3b8; padding: 4px; text-align: center;">${q.status}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px; text-align: center; font-weight: bold;">${q.status}</td>
                         </tr>
                     `;
                 });
 
-                // 4. 擷取畫面上的圖表轉為 Base64 圖片並置入 PDF 容器
-                const midCanvas = document.getElementById("midChart");
-                if (midCanvas) document.getElementById("pdf-img-mid").src = midCanvas.toDataURL("image/png");
+                const qTrendCanvas = document.getElementById("qualityTrendChart");
+                if (qTrendCanvas) document.getElementById("pdf-img-quality-trend").src = qTrendCanvas.toDataURL("image/png");
 
-                const qCanvas = document.getElementById("qualityTrendChart");
-                if (qCanvas) document.getElementById("pdf-img-quality").src = qCanvas.toDataURL("image/png");
+                const qClosureCanvas = document.getElementById("qualityClosureChart");
+                if (qClosureCanvas) document.getElementById("pdf-img-quality-closure").src = qClosureCanvas.toDataURL("image/png");
 
-                const mCanvas = document.getElementById("machineDeptChart");
-                if (mCanvas) document.getElementById("pdf-img-machine").src = mCanvas.toDataURL("image/png");
+                // 5. 填入「分頁四：機故統計與歷史分析圖表 (滿版顯示)」
+                const mDeptCanvas = document.getElementById("machineDeptChart");
+                if (mDeptCanvas) document.getElementById("pdf-img-machine-dept").src = mDeptCanvas.toDataURL("image/png");
 
-                // 5. 使用 html2canvas 渲染集中容器
+                const mItemCanvas = document.getElementById("machineItemChart");
+                if (mItemCanvas) document.getElementById("pdf-img-machine-item").src = mItemCanvas.toDataURL("image/png");
+
+                // 6. 使用 html2canvas 渲染集中容器
                 const element = document.getElementById("pdf-export-container");
                 const canvas = await html2canvas(element, { scale: 2, useCORS: true });
                 const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-                // 6. 使用 jsPDF 產生 A4 集中 PDF 報表
+                // 7. 使用 jsPDF 產生多頁 A4 集中 PDF 報表
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const imgWidth = 210; // A4 寬度 mm
@@ -882,8 +990,8 @@
                     heightLeft -= pageHeight;
                 }
 
-                pdf.save(`工廠中夜班KPI集中分析報表_${new Date().toISOString().slice(0, 10)}.pdf`);
-                alert("集中式 PDF 報表已成功匯出下載！");
+                pdf.save(`工廠中夜班KPI全功能綜合分析報表_${new Date().toISOString().slice(0, 10)}.pdf`);
+                alert("企業全方位綜合 PDF 報表已成功匯出下載！");
             } catch (err) {
                 alert("匯出 PDF 失敗: " + err.message);
             } finally {
@@ -1655,7 +1763,7 @@
                     <td class="p-3"><input type="text" value="${m.desc || ''}" onchange="updateMachineData(${index}, 'desc', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
                     <td class="p-3"><input type="text" value="${m.solution || ''}" onchange="updateMachineData(${index}, 'solution', this.value)" class="w-32 px-1 py-1 border border-slate-300 rounded text-xs font-bold bg-white"></td>
                     <td class="p-3 text-center">
-                        <select onchange="updateMachineData(${index}, 'closed', this.value)" class="px-2 py-1 rounded text-xs font-extrabold border ${m.closed === 'Y' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}">
+                        <select onchange="updateMachineData(${index}, 'closed', this.value)" class="px-2 py-1 rounded text-xs font-extrabold border ${m.closed === 'Y' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-emerald-300'}">
                             <option value="Y" ${m.closed === 'Y' ? 'selected' : ''}>已結案</option>
                             <option value="" ${m.closed !== 'Y' ? 'selected' : ''}>未結案</option>
                         </select>
