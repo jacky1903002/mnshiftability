@@ -15,6 +15,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- SheetJS (xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF & html2canvas for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         .mobile-frame-mode {
             max-width: 414px !important;
@@ -42,6 +45,10 @@
                 </div>
             </div>
             <div class="flex items-center space-x-4">
+                <!-- 新增：一鍵匯出集中式 PDF 報表按鈕 -->
+                <button onclick="exportAllDataToPDF()" class="bg-red-600 hover:bg-red-500 text-white text-xs px-3.5 py-1.5 rounded-lg transition shadow font-extrabold flex items-center space-x-1.5">
+                    <i class="fa-solid fa-file-pdf"></i><span>一鍵匯出集中 PDF 報表</span>
+                </button>
                 <button onclick="toggleDeviceMode()" id="device-mode-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg transition shadow font-extrabold flex items-center space-x-1.5">
                     <i class="fa-solid fa-mobile-screen-button"></i><span id="device-mode-text">切換手機模式</span>
                 </button>
@@ -251,7 +258,6 @@
                             <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>匯入Excel
                             <input type="file" id="summary-excel-input" accept=".xlsx, .xls" onchange="importSummaryExcel(event)" class="hidden">
                         </label>
-                        <!-- 清除雲端近七天 / 當月圖表資料按鈕 -->
                         <button onclick="clearCloudDataByPeriod('7days')" class="bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold px-3 py-2 rounded-lg shadow transition flex items-center">
                             <i class="fa-solid fa-trash-can mr-1"></i>清除雲端近七天資料
                         </button>
@@ -598,6 +604,69 @@
 
     </div>
 
+    <!-- 隱藏的集中式 PDF 報告生成樣板（確保數據與圖表集中、不分散） -->
+    <div id="pdf-export-container" style="position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: sans-serif;">
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #1e293b; padding-bottom: 10px;">
+            <h1 style="font-size: 22px; font-weight: bold; color: #0f172a; margin: 0;">工廠中夜班 KPI 智慧管理系統 - 綜合分析總報告</h1>
+            <p style="font-size: 12px; color: #475569; margin: 5px 0 0 0;">製表日期: <span id="pdf-report-date"></span> | 匯集全廠稼動、品質異常與機故統計數據</p>
+        </div>
+
+        <!-- 區塊 1: 總表分析摘要 -->
+        <div style="margin-bottom: 25px;">
+            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 6px 10px; margin: 0 0 10px 0;">一、 全廠各課 KPI 平均表現摘要</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <thead>
+                    <tr style="background: #cbd5e1; color: #0f172a;">
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: left;">製程課別</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">中班平均稼動率</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: center;">夜班平均稼動率</th>
+                        <th style="border: 1px solid #94a3b8; padding: 6px; text-align: left;">運行趨勢與建議</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-summary-table-body">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 區塊 2: 集中圖表預覽區 -->
+        <div style="margin-bottom: 25px;">
+            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 6px 10px; margin: 0 0 10px 0;">二、 核心營運與異常圖表集中檢視</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 12px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">各課代表中班稼動趨勢圖</p>
+                    <img id="pdf-img-mid" style="max-width: 100%; height: auto; max-height: 220px;" />
+                </div>
+                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 12px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">品質異常逐日累積趨勢圖</p>
+                    <img id="pdf-img-quality" style="max-width: 100%; height: auto; max-height: 200px;" />
+                </div>
+                <div style="border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+                    <p style="font-size: 12px; font-weight: bold; color: #334155; margin: 0 0 5px 0;">機台故障依課別停機次數統計圖</p>
+                    <img id="pdf-img-machine" style="max-width: 100%; height: auto; max-height: 200px;" />
+                </div>
+            </div>
+        </div>
+
+        <!-- 區塊 3: 品質異常未處理摘要 -->
+        <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; background: #e2e8f0; padding: 6px 10px; margin: 0 0 10px 0;">三、 品質異常與未結案摘要清單</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <thead>
+                    <tr style="background: #cbd5e1; color: #0f172a;">
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">日期</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">製程</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">製令編號</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">異常原因</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">責任單位</th>
+                        <th style="border: 1px solid #94a3b8; padding: 5px;">狀態</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-quality-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Firebase SDK 與邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -644,7 +713,6 @@
         const QUALITY_PROCESSES = ["OQC", "IQC", "IPQC"];
         const QUALITY_STATUSES = ["已結案", "未結案"];
 
-        // [修正] 自動擴充日期產生範圍：涵蓋 2026-11 (1~30日)、2026-10 (1~31日) 與 2026-09 (1~30日)
         const DATES = [];
         for (let i = 1; i <= 30; i++) {
             let dayStr = i < 10 ? `0${i}` : `${i}`;
@@ -718,6 +786,112 @@
             return str;
         }
 
+        // ==========================================
+        // [新增功能] 一鍵集中匯出 PDF 報表核心邏輯
+        // ==========================================
+        window.exportAllDataToPDF = async function() {
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 正在集中匯出 PDF...`;
+            btn.disabled = true;
+
+            try {
+                // 1. 填入當前報表日期
+                document.getElementById("pdf-report-date").innerText = new Date().toISOString().slice(0, 10);
+
+                // 2. 填充總表摘要數據到 PDF 隱藏區塊
+                let pdfSummaryBody = document.getElementById("pdf-summary-table-body");
+                pdfSummaryBody.innerHTML = "";
+                let novemberDates = DATES.filter(d => d.startsWith("2026-11")).sort();
+                let activeNovDates = novemberDates.filter(d => {
+                    const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
+                    return sample && (sample.midTotalMachines > 0 || sample.nightTotalMachines > 0);
+                });
+                if (activeNovDates.length === 0) activeNovDates = novemberDates.slice(0, 30);
+
+                DEPARTMENTS.slice(0, 6).forEach(dept => { // 匯出前6個核心製程避免過長
+                    const deptData = globalDataCache[dept] || {};
+                    let totalMidUtil = 0, totalNightUtil = 0;
+                    let count = activeNovDates.length;
+                    activeNovDates.forEach(date => {
+                        const dayObj = deptData[date] || deptData[toStandardDateStr(date)] || deptData[date.replace(/-/g, '/')] || { midTotalMachines:1, midActiveMachines:0, nightTotalMachines:1, nightActiveMachines:0 };
+                        totalMidUtil += dayObj.midTotalMachines > 0 ? (dayObj.midActiveMachines / dayObj.midTotalMachines) * 100 : 0;
+                        totalNightUtil += dayObj.nightTotalMachines > 0 ? (dayObj.nightActiveMachines / dayObj.nightTotalMachines) * 100 : 0;
+                    });
+                    let avgMidU = count > 0 ? (totalMidUtil / count).toFixed(1) : 0;
+                    let avgNightU = count > 0 ? (totalNightUtil / count).toFixed(1) : 0;
+                    let trendText = avgMidU < 60 ? "低稼動警示(<60%)" : "運行正常";
+
+                    pdfSummaryBody.innerHTML += `
+                        <tr>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; font-weight: bold;">${dept}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center; color: #b45309;">${avgMidU}%</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px; text-align: center; color: #4338ca;">${avgNightU}%</td>
+                            <td style="border: 1px solid #94a3b8; padding: 5px;">${trendText}</td>
+                        </tr>
+                    `;
+                });
+
+                // 3. 填充品質異常清單摘要到 PDF 隱藏區塊
+                let pdfQualityBody = document.getElementById("pdf-quality-table-body");
+                pdfQualityBody.innerHTML = "";
+                localQualityData.slice(0, 5).forEach(q => {
+                    pdfQualityBody.innerHTML += `
+                        <tr>
+                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.date}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.process}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.order}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.reason}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px;">${q.dept}</td>
+                            <td style="border: 1px solid #94a3b8; padding: 4px; text-align: center;">${q.status}</td>
+                        </tr>
+                    `;
+                });
+
+                // 4. 擷取畫面上的圖表轉為 Base64 圖片並置入 PDF 容器
+                const midCanvas = document.getElementById("midChart");
+                if (midCanvas) document.getElementById("pdf-img-mid").src = midCanvas.toDataURL("image/png");
+
+                const qCanvas = document.getElementById("qualityTrendChart");
+                if (qCanvas) document.getElementById("pdf-img-quality").src = qCanvas.toDataURL("image/png");
+
+                const mCanvas = document.getElementById("machineDeptChart");
+                if (mCanvas) document.getElementById("pdf-img-machine").src = mCanvas.toDataURL("image/png");
+
+                // 5. 使用 html2canvas 渲染集中容器
+                const element = document.getElementById("pdf-export-container");
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+                // 6. 使用 jsPDF 產生 A4 集中 PDF 報表
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; // A4 寬度 mm
+                const pageHeight = 295; // A4 高度 mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                pdf.save(`工廠中夜班KPI集中分析報表_${new Date().toISOString().slice(0, 10)}.pdf`);
+                alert("集中式 PDF 報表已成功匯出下載！");
+            } catch (err) {
+                alert("匯出 PDF 失敗: " + err.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
         window.clearOldCloudData = async function() {
             const thresholdDate = document.getElementById("clear-old-date-input").value;
             if (!thresholdDate) {
@@ -750,7 +924,6 @@
             }
         }
 
-        // 清除雲端指定區間（近七天分析或當月總評）資料
         window.clearCloudDataByPeriod = async function(periodType) {
             let targetDates = [];
             let periodName = "";
@@ -1709,7 +1882,6 @@
             const tbody = document.getElementById("summary-table-body");
             tbody.innerHTML = "";
 
-            // 動態抓取 11 月份實際有填寫稼動資料的日期範圍
             let novemberDates = DATES.filter(d => d.startsWith("2026-11")).sort();
             let activeNovDates = novemberDates.filter(d => {
                 const sample = globalDataCache[DEPARTMENTS[0]]?.[d] || globalDataCache[DEPARTMENTS[0]]?.[toStandardDateStr(d)];
